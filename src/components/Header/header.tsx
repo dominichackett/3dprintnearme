@@ -115,7 +115,7 @@ import Logo from './logo';
                               Profile
                             </Link>
                             <Link
-                              href="/myalerts"
+                              href="/myorders"
                               className="block rounded py-[10px] px-4 text-sm font-medium text-[#bababa] hover:text-white"
                             >
                               My Orders                            </Link>
@@ -129,7 +129,7 @@ import Logo from './logo';
                             </Link>
 
                             <Link
-                              href="/fleet"
+                              href="/printorders"
                               className="block rounded py-[10px] px-4 text-sm font-medium text-[#bababa] hover:text-white"
                             >
                               Customer Print Orders

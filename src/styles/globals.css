@@ -2,26 +2,106 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  --foreground-rgb: 0, 0, 0;
-  --background-start-rgb: 214, 219, 220;
-  --background-end-rgb: 255, 255, 255;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --foreground-rgb: 255, 255, 255;
-    --background-start-rgb: 0, 0, 0;
-    --background-end-rgb: 0, 0, 0;
-  }
-}
-
-body {
-  color: rgb(var(--foreground-rgb));
+.grade {
   background: linear-gradient(
-      to bottom,
-      transparent,
-      rgb(var(--background-end-rgb))
-    )
-    rgb(var(--background-start-rgb));
+    270deg,
+    rgba(72, 211, 130, 0.15) 0%,
+    #141420 100%
+  );
 }
+
+#circle {
+  width: 300px;
+  height: 300px;
+  border-radius: 50%;
+  border: 2px solid green;
+  position: relative;
+background-image: url("/images/map.jpg");
+background-size: cover;
+opacity: .4;
+
+
+
+}
+#logo {
+font-family: 'Roboto', sans-serif;
+color: green;
+font-size: 38px;
+font-weight: bold;
+text-transform: uppercase;
+display: inline-block;
+padding: 10px;
+border: 2px solid green;
+border-radius: 10px;
+background-color:white;
+opacity: .65;
+}
+#flight {
+font-family: 'Roboto', sans-serif;
+color: green;
+font-size: 12px;
+font-weight: bold;
+text-transform: uppercase;
+display: inline-block;
+padding: 10px;
+}
+
+#logosmall {
+  font-family: 'Roboto', sans-serif;
+  color: green;
+  font-size: 18px;
+  font-weight: bold;
+  text-transform: uppercase;
+  display: inline-block;
+  padding: 4px;
+  border: 2px solid green;
+  border-radius: 10px;
+  background-color:white;
+  
+  }
+  #flightsmall {
+    font-family: 'Roboto', sans-serif;
+    color: green;
+    font-size: 8px;
+    font-weight: bold;
+    text-transform: uppercase;
+    display: inline-block;
+    padding: 4px;
+    margin-left: 6px;
+    }
+#dot {
+  width: 2px;
+  height: 2px;
+  border-radius: 50%;
+  background-color: red;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+#sector {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 0;
+  height: 0;
+  border: 150px solid transparent;
+  border-top: 150px solid green;
+  border-radius: 50%;
+  transform-origin: center;
+  clip: rect(0px, 300px, 300px, 150px);
+  opacity: 0.7;
+transform: rotate(45deg);
+  animation: rotate 2s linear infinite;
+}
+@keyframes rotate {
+  from { transform: rotate(45deg); }
+  to { transform: rotate(405deg); }
+}
+h1 {
+  color: yellow;
+}
+i {
+  margin-right: 0.5em;
+}
+

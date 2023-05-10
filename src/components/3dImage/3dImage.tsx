@@ -1,4 +1,5 @@
-import {  useState,useEffect,useRef } from 'react'
+import React from 'react';
+import {  useState,useEffect,useRef ,useImperativeHandle} from 'react'
 import {GCodeViewer} from "react-gcode-viewer";
 import { useAccount, useNetwork ,useSigner} from 'wagmi';
 const style = {
@@ -18,9 +19,11 @@ function classNames(...classes) {
     return classes.filter(Boolean).join(' ')
   }
   
-  
+  export interface ImagePanelRef {
+    setOptions: (options:any) => void;
+    }
 
-export default function ImagePanel(props:any) {
+const ImagePanel=React.forwardRef<ImagePanelRef>((props:any,ref:any)=> {
 
     const fileInputRefGCODE = useRef(null);
     const [gcode, setGcode] = useState(null);
@@ -41,7 +44,19 @@ export default function ImagePanel(props:any) {
     const { address } = useAccount();
    const { chain } = useNetwork();
    const { data: signer} = useSigner()
- 
+   
+
+   const setOptions = (options:any) => {
+    // update childDataApi and pass it to parent
+
+    worker.current.postMessage({"cmd":"setFilament","msg":{"options":{filamentType:options}}})
+   
+  }
+
+  useImperativeHandle(ref, () => ({
+    setOptions
+  }));
+
     useEffect(()=>{
       console.log(props)
       if(props.id){
@@ -362,4 +377,6 @@ export default function ImagePanel(props:any) {
     </div>}
   
   </>)
-}
+})
+
+export default ImagePanel;

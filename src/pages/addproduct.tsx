@@ -1,10 +1,10 @@
 
-import { Fragment, useState,useEffect } from 'react'
+import { Fragment, useState,useEffect,useRef } from 'react'
 import { Dialog, Tab, Transition } from '@headlessui/react'
 import { XMarkIcon} from '@heroicons/react/24/outline'
 import Header from '../components/Header/Header'
 import Footer from '@/components/Footer/Footer'
-import ImagePanel from '@/components/3dImage/3dimage'
+import ImagePanel ,{ ImagePanelRef }  from '@/components/3dImage/3dimage'
 const materials = [
     { name: 'PLA',cost:12},
     { name: 'ABS',cost:.05},
@@ -139,6 +139,7 @@ export default function Product() {
   const [selectedFile, setSelectedFile] = useState()
   const [preview, setPreview] = useState()
   const [filename,setFilename] = useState()
+  const imagePanelRef = useRef<ImagePanelRef>(null)
   const setPrintData = (_filament:any,_printTime:any,_filename:any)=>{
      
      setFilename(_filename)
@@ -157,6 +158,12 @@ export default function Product() {
     // free memory when ever this component is unmounted
     return () => URL.revokeObjectURL(objectUrl)
   }, [selectedFile])
+
+  const materialChanged = (event) => {
+    console.log(imagePanelRef.current)
+    if(imagePanelRef.current)
+      imagePanelRef.current.setOptions( event.target.options[event.target.selectedIndex].text)
+  }
   return (
     <div className="bg-black">
       {/* Mobile menu */}
@@ -259,7 +266,7 @@ export default function Product() {
             <Tab.Panels className="aspect-h-1 aspect-w-1 w-full">
               {product.images.map((image) => (
                 <Tab.Panel key={image.id}>
-                  <ImagePanel setPrintData={setPrintData} />
+                  <ImagePanel setPrintData={setPrintData} ref={imagePanelRef} />
 
                 </Tab.Panel>
               ))}
@@ -308,10 +315,13 @@ export default function Product() {
               </label>
               <div className="mt-2">
                 <select
+                 onChange={materialChanged}
                   id="material"
                   name="material"
                   className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:max-w-xs sm:text-sm sm:leading-6"
                 >
+                                      <option value={-1}>Select Material</option>    
+
                   {materials.map((material,index) => (<option value={index}>{material.name}</option>))}
                 </select>
               </div>

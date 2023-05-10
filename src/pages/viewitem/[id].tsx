@@ -1,13 +1,25 @@
 
-import { Fragment, useState ,useEffect} from 'react'
+import { Fragment, useState,useEffect ,useRef} from 'react'
 import { Dialog, Tab, Transition,Menu } from '@headlessui/react'
 import { XMarkIcon} from '@heroicons/react/24/outline'
 
 import Header from '@/components/Header/Header'
 import Footer from '@/components/Footer/Footer'
-import ImagePanel from '@/components/3dImage/3dimage'
+import ImagePanel ,{ ImagePanelRef } from '@/components/3dImage/3dimage'
 import { useRouter } from 'next/router'
-
+import {PrinterSearchRef} from '@/components/PrinterSearch/PrinterSearch'
+import PrinterSearch from '@/components/PrinterSearch/PrinterSearch'
+const materials = [
+    { name: 'PLA',cost:12},
+    { name: 'ABS',cost:.05},
+    { name: 'PETG',cost:.01},
+    { name: 'NYLON',cost:.05},
+    { name: 'TPU',cost:.09},
+    { name: 'TPE',cost:1},
+  
+   
+ 
+  ]
 const navigation = {
   categories: [
     {
@@ -135,6 +147,23 @@ export default function ViewItem() {
   const [itemPrice,setItemPrice] = useState(12)
   const[itemId,setItemId] = useState()
   const router = useRouter()
+
+  const imagePanelRef = useRef<ImagePanelRef>(null)
+  const printerSearchRef = useRef<PrinterSearchRef>(null)
+  const materialChanged = (event) => {
+      console.log(imagePanelRef.current)
+      if(imagePanelRef.current)
+        imagePanelRef.current.setOptions( event.target.options[event.target.selectedIndex].text)
+    }
+  
+
+  const searchPrinter = () =>{
+      printerSearchRef.current?.toggleOpen(true)
+  }
+
+  const setPrinter = (printer:any) =>{
+      alert("Printer")
+  }
   //const { id } = router.query
   useEffect(()=>{
     if(!router.isReady) return;
@@ -150,6 +179,8 @@ export default function ViewItem() {
   return (
     <div className="bg-black">
       {/* Mobile menu */}
+      <PrinterSearch ref={printerSearchRef} setPrinter={setPrinter}/>
+
       <Transition.Root show={open} as={Fragment}>
         <Dialog as="div" className="relative z-40 lg:hidden" onClose={setOpen}>
           <Transition.Child
@@ -250,7 +281,7 @@ export default function ViewItem() {
             <Tab.Panels className="aspect-h-1 aspect-w-1 w-full">
               {product.images.map((image) => (
                 <Tab.Panel key={image.id}>
-               {itemId && <ImagePanel  setPrintData={setPrintData} id={itemId} />}
+               {itemId && <ImagePanel ref={imagePanelRef} setPrintData={setPrintData} id={itemId} />}
 
                 </Tab.Panel>
               ))}
@@ -274,19 +305,30 @@ export default function ViewItem() {
 
          
             <div className="mt-4 sm:col-span-3">
-              <label htmlFor="category" className="block text-sm font-medium leading-6 text-white">
-                Select Printer
+              <label htmlFor="material" className="block text-sm font-medium leading-6 text-white">
+                Select Material
               </label>
               <div className="mt-2">
                 <select
-                  id="printer"
-                  name="printer"
-                  className="block w-full rounded-md border-0 py-1.5 text-black shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:max-w-xs sm:text-sm sm:leading-6"
+                 onChange={materialChanged}
+
+                  id="material"
+                  name="material"
+                  className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:max-w-xs sm:text-sm sm:leading-6"
                 >
-                  <option>United States</option>
-                  <option>Canada</option>
-                  <option>Mexico</option>
+                  <option value={-1}>Select Material</option>    
+                  {materials.map((material,index) => (<option value={index}>{material.name}</option>))}
                 </select>
+              </div>
+            </div> 
+
+         
+            <div className="mt-4 sm:col-span-3">
+              <label onClick ={searchPrinter}  htmlFor="category" className="cursor-pointer block text-sm font-medium leading-6 text-white">
+                Click to Select Printer
+              </label>
+              <div className="mt-2">
+                <p className='text-white'>no printer selected</p>
               </div>
             </div>
 

@@ -1,5 +1,5 @@
 
-import { Fragment, useState,useEffect } from 'react'
+import { Fragment, useState,useEffect ,useRef} from 'react'
 import { Dialog, Disclosure, Menu, Popover, Tab, Transition } from '@headlessui/react'
 import { StarIcon } from '@heroicons/react/20/solid'
 import { HeartIcon, MinusIcon, PlusIcon ,XMarkIcon} from '@heroicons/react/24/outline'
@@ -7,7 +7,9 @@ import { HeartIcon, MinusIcon, PlusIcon ,XMarkIcon} from '@heroicons/react/24/ou
 import { ChevronDownIcon } from '@heroicons/react/20/solid'
 import Header from '../components/Header/Header'
 import Footer from '@/components/Footer/Footer'
-import ImagePanel from '@/components/3dImage/3dimage'
+import ImagePanel ,{ ImagePanelRef } from '@/components/3dImage/3dimage'
+import {PrinterSearchRef} from '@/components/PrinterSearch/PrinterSearch'
+import PrinterSearch from '@/components/PrinterSearch/PrinterSearch'
 
 const navigation = {
   categories: [
@@ -106,13 +108,31 @@ export default function MaketPlace() {
     const [printCost,setPrintCost] = useState(0)
     const [filamentCost,setFilamentCost] = useState(0)
     const [filename,setFilename] = useState()
+    const imagePanelRef = useRef<ImagePanelRef>(null)
+    const printerSearchRef = useRef<PrinterSearchRef>(null)
+    const materialChanged = (event) => {
+        console.log(imagePanelRef.current)
+        if(imagePanelRef.current)
+          imagePanelRef.current.setOptions( event.target.options[event.target.selectedIndex].text)
+      }
     const setPrintData = (_filament:any,_printTime:any,_filename:any)=>{
        setPrintCost((_printTime*hourlyPrice))
        setFilamentCost((_filament*filamentPrice))
        setFilename(_filename)
     }
+
+
+    const searchPrinter = () =>{
+        printerSearchRef.current?.toggleOpen(true)
+    }
+
+    const setPrinter = (printer:any) =>{
+        alert("Printer")
+    }
     return (
     <div className="bg-black">
+              <PrinterSearch ref={printerSearchRef} setPrinter={setPrinter}/>
+  
       {/* Mobile menu */}
       <Transition.Root show={open} as={Fragment}>
         <Dialog as="div" className="relative z-40 lg:hidden" onClose={setOpen}>
@@ -210,7 +230,7 @@ export default function MaketPlace() {
         <div className="lg:grid lg:grid-cols-2 lg:items-start lg:gap-x-8">
       
              <div>  
-              <ImagePanel  setPrintData={setPrintData} />
+              <ImagePanel  setPrintData={setPrintData}  ref={imagePanelRef} />
             </div>
               
           {/* Product info */}
@@ -237,10 +257,13 @@ export default function MaketPlace() {
               </label>
               <div className="mt-2">
                 <select
+                 onChange={materialChanged}
+
                   id="material"
                   name="material"
                   className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:max-w-xs sm:text-sm sm:leading-6"
                 >
+                  <option value={-1}>Select Material</option>    
                   {materials.map((material,index) => (<option value={index}>{material.name}</option>))}
                 </select>
               </div>
@@ -248,24 +271,16 @@ export default function MaketPlace() {
 
          
             <div className="mt-4 sm:col-span-3">
-              <label htmlFor="category" className="block text-sm font-medium leading-6 text-white">
-                Select Printer
+              <label onClick ={searchPrinter}  htmlFor="category" className="cursor-pointer block text-sm font-medium leading-6 text-white">
+                Click to Select Printer
               </label>
               <div className="mt-2">
-                <select
-                  id="printer"
-                  name="printer"
-                  className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:max-w-xs sm:text-sm sm:leading-6"
-                >
-                  <option>United States</option>
-                  <option>Canada</option>
-                  <option>Mexico</option>
-                </select>
+                <p className='text-white'>no printer selected</p>
               </div>
             </div>
 
             <div className="mt-4 sm:col-span-3">
-              <label htmlFor="about" className="block text-sm font-medium leading-6 text-gray-900">
+              <label htmlFor="about" className="block text-sm font-medium leading-6 text-white">
                 Description
               </label>
               <div className="mt-2">

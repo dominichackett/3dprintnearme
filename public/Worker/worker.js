@@ -202,7 +202,16 @@ var analyzeModel = function(){
       density = 1.04;
   }else if(gCodeOptions['filamentType'] === 'PLA') {
       density = 1.24;
-  }
+  } else if(gCodeOptions['filamentType'] === 'PETG') {
+    density = 1.27;
+}else if(gCodeOptions['filamentType'] === 'NYLON') {
+    density = 1.01;
+}else if(gCodeOptions['filamentType'] === 'TPU') {
+    density = 1.25;
+}else if(gCodeOptions['filamentType'] === 'TPE') {
+    density = 1.24;
+}
+
   totalWeight = density*3.141*gCodeOptions['filamentDia']/10*gCodeOptions['filamentDia']/10/4*totalFilament/10;
 
   gCodeOptions['wh'] = parseFloat(gCodeOptions['nozzleDia'])/parseFloat(layerHeight);
@@ -270,7 +279,8 @@ var analyzeModel = function(){
               volSpeedsByLayer: volSpeedsByLayer,
               printTimeByLayer: printTimeByLayer,
               extrusionSpeeds: extrusionSpeeds,
-              extrusionSpeedsByLayer: extrusionSpeedsByLayer
+              extrusionSpeedsByLayer: extrusionSpeedsByLayer,
+              gCodeOptions:gCodeOptions
           }
       });
   };
@@ -758,9 +768,27 @@ var analyzeModel = function(){
                       volSpeeds: volSpeeds,
                       volSpeedsByLayer: volSpeedsByLayer,
                       extrusionSpeeds: extrusionSpeeds,
-                      extrusionSpeedsByLayer: extrusionSpeedsByLayer
+                      extrusionSpeedsByLayer: extrusionSpeedsByLayer,
+                      gCodeOptions:gCodeOptions
+
                   }})
-              }                    
+ 
+                 
+ 
+         
+        }        
+
+
+        var setFilament= function(msg){
+                gCodeOptions["filamentType"] = msg.options.filamentType;
+            
+                model = []
+                 runAnalyze()    
+           
+
+        
+    }
+
 
 onmessage = function (e){
 var data = e.data;
@@ -769,13 +797,15 @@ switch (data.cmd) {
   case 'loadFile':
       loadFile(data.msg);
       break;
-  case 'setOption':
-      setOption(data.msg);
+  case 'setFilament':
+      setFilament(data.msg);
       break;
    case 'analyzeModel':
      runAnalyze();
      break;     
-     
+     case 'setOption':
+        setOption(data.msg);
+        break;
      case 'returnModel':
       getModelInfo();
       break;       

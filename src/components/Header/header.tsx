@@ -12,6 +12,7 @@ import {
   import { useSession } from "next-auth/react"
 import Link from 'next/link';
 import Logo from './logo';
+import { getAutenticationCodeSXT,firstQuery } from '../utils/utils';
   export default function Header(){
     const [navbarOpen,setNavbarOpen] = useState(false)
     const [submenuOpen,setSubmenuOpen] = useState(false)
@@ -21,6 +22,16 @@ import Logo from './logo';
     const { disconnect } = useDisconnect()
     const { data: session,status } = useSession()
     const router  = useRouter()
+   
+   
+   useEffect(()=>{
+       async function getAuthCode()
+       {
+           const authCode = await firstQuery()
+           console.log(authCode)
+       }
+       getAuthCode()
+   })
     useEffect(()=>{
       if(status == "unauthenticated" && (router.pathname !="/" && router.pathname !="/support" ))
         router.push("/")

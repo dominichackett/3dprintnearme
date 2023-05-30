@@ -1,4 +1,4 @@
-import { useState ,useEffect} from 'react'
+import { useState ,useEffect,useRef,useContext} from 'react'
 import {
     useAccount ,
     useConnect,
@@ -12,7 +12,10 @@ import {
   import { useSession } from "next-auth/react"
 import Link from 'next/link';
 import Logo from './logo';
-import { getAutenticationCodeSXT,firstQuery } from '../utils/utils';
+import { TokenContext } from '../Context/spacetime';
+import { queryCategory,insertCategory,deleteCategory} from '../utils/utils';
+import { v4 as uuidv4 } from 'uuid';
+
   export default function Header(){
     const [navbarOpen,setNavbarOpen] = useState(false)
     const [submenuOpen,setSubmenuOpen] = useState(false)
@@ -22,16 +25,36 @@ import { getAutenticationCodeSXT,firstQuery } from '../utils/utils';
     const { disconnect } = useDisconnect()
     const { data: session,status } = useSession()
     const router  = useRouter()
-   
-   
+    const aCode = useRef()
+   const { accessToken, refreshToken,accessTokenExpires,refreshTokenExpires } = useContext(TokenContext);
+
    useEffect(()=>{
-       async function getAuthCode()
+       async function getCategoryQuery()
        {
-           const authCode = await firstQuery()
-           console.log(authCode)
-       }
-       getAuthCode()
-   })
+            try 
+            {const results = await queryCategory(accessToken)
+              console.log(results.length)
+             console.log(results)
+            await deleteCategory(accessToken,"4f3e48e0-a102-4730-b54e-fef4af7bc282")
+             if(results.length == 1)
+             {
+              // await insertCategory(accessToken,"Art & Design")
+               await insertCategory(accessToken,uuidv4(),"Fashion")
+               await insertCategory(accessToken,uuidv4(),"Gadgets")
+               await insertCategory(accessToken,uuidv4(),"Healthcare")
+               await insertCategory(accessToken,uuidv4(),"Sports & Outdoors")
+               await insertCategory(accessToken,uuidv4(),"Toys & Games")
+               await insertCategory(accessToken,uuidv4(),"Fashion")
+             }
+            }catch(error)
+            {
+
+            }  
+        }
+        if(accessToken)
+        getCategoryQuery()
+      console.log(accessToken)
+   },[accessToken])
     useEffect(()=>{
       if(status == "unauthenticated" && (router.pathname !="/" && router.pathname !="/support" ))
         router.push("/")

@@ -12,6 +12,7 @@ import {
   RainbowKitProvider,darkTheme 
 } from '@rainbow-me/rainbowkit';
 
+import { TokenProvider } from '../components/Context/spacetime';
 
 const zkEVM :Chain = {
     id:1442,
@@ -84,7 +85,7 @@ const client = createClient({
 })
 
 export default function App({ Component, pageProps }: AppProps) {
-  return   <WagmiConfig client={client}>
+  return   <WagmiConfig client={client}><TokenProvider> 
         <SessionProvider refetchInterval={0} session={pageProps.session}>
   
     <RainbowKitSiweNextAuthProvider
@@ -93,5 +94,5 @@ export default function App({ Component, pageProps }: AppProps) {
           <RainbowKitProvider chains={chains} theme={darkTheme()}>
 
   <Component {...pageProps} /></RainbowKitProvider></RainbowKitSiweNextAuthProvider>
-  </SessionProvider></WagmiConfig>
+  </SessionProvider></TokenProvider></WagmiConfig>
 }

@@ -1,9 +1,8 @@
 
 import { Fragment, useState,useEffect } from 'react'
-import { Dialog, Disclosure, Menu, Popover, Tab, Transition } from '@headlessui/react'
-import { StarIcon } from '@heroicons/react/20/solid'
+import { Dialog, Menu, Popover, Tab, Transition } from '@headlessui/react'
 import { HeartIcon, MinusIcon, PlusIcon ,XMarkIcon} from '@heroicons/react/24/outline'
-
+import Link from 'next/link'
 import { ChevronDownIcon } from '@heroicons/react/20/solid'
 import Header from '../components/Header/Header'
 import Footer from '@/components/Footer/Footer'
@@ -314,7 +313,12 @@ export default function MaketPlace() {
               <h2 id="filter-heading" className="sr-only">
                 Product filters
               </h2>
-
+              <Link
+                  href="/addproduct"
+                  className="mr-5 mb-5 inline-flex items-center justify-center rounded-md border-2 border-primary bg-primary py-3 px-7 text-base font-semibold text-white transition-all hover:bg-opacity-90"
+                >
+                  Add Product
+                </Link>
               <div className="flex items-center justify-between">
                 <Menu as="div" className="relative inline-block text-left">
                   <div>

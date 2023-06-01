@@ -1,7 +1,7 @@
 import '../styles/globals.css'
 import type { AppProps } from 'next/app'
 import { WagmiConfig, createClient, configureChains } from 'wagmi'
-import { Chain ,goerli,optimismGoerli,gnosisChiado,filecoinHyperspace} from 'wagmi/chains';
+import { Chain ,goerli,optimismGoerli,gnosisChiado,filecoinHyperspace,polygonMumbai} from 'wagmi/chains';
 
 import { publicProvider } from 'wagmi/providers/public'
 import '@rainbow-me/rainbowkit/styles.css';
@@ -63,7 +63,7 @@ const zkEVM :Chain = {
 // Configure chains & providers
 // Two popular providers are Alchemy (alchemy.com) and Infura (infura.io)
 const { chains, provider } = configureChains(
-  [gnosisChiado,zkEVM,optimismGoerli,scrollTestnet,filecoinHyperspace,goerli],
+  [polygonMumbai],
   [publicProvider()],
 )
 

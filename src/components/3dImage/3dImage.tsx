@@ -2,6 +2,10 @@ import React from 'react';
 import {  useState,useEffect,useRef ,useImperativeHandle} from 'react'
 import {GCodeViewer} from "react-gcode-viewer";
 import { useAccount, useNetwork ,useSigner} from 'wagmi';
+import Notification from '@/components/Notification/Notification'
+import { Web3Storage, File } from "web3.storage";
+import { NFTStorage } from "nft.storage";
+
 const style = {
   top: 70,
   left: 0,
@@ -44,7 +48,20 @@ const ImagePanel=React.forwardRef<ImagePanelRef>((props:any,ref:any)=> {
     const { address } = useAccount();
    const { chain } = useNetwork();
    const { data: signer} = useSigner()
-   
+   const [storage] = useState(
+    new Web3Storage({ token: process.env.NEXT_PUBLIC_WEB3_STORAGE_KEY })
+  );
+  const [nftstorage] = useState(
+    new NFTStorage({ token: process.env.NEXT_PUBLIC_NFT_STORAGE_API_KEY})
+  );
+    // NOTIFICATIONS functions
+const [notificationTitle, setNotificationTitle] = useState();
+const [notificationDescription, setNotificationDescription] = useState();
+const [dialogType, setDialogType] = useState(1);
+const [show, setShow] = useState(false);
+const close = async () => {
+  setShow(false);
+};
 
    const setOptions = (options:any) => {
     // update childDataApi and pass it to parent
@@ -230,13 +247,62 @@ const ImagePanel=React.forwardRef<ImagePanelRef>((props:any,ref:any)=> {
     }, [selectedGCODEFile])
 
 
-    const saveObject = async ()=> {
+    
+      
 
       
+    
+    
+    const saveObject = async ()=> {
+
+      console.log(selectedGCODEFile)
+      console.log(selectedFile)
+      if(selectedGCODEFile==undefined || selectedFile == undefined)
+      {
+        setDialogType(2) //Error
+        setNotificationTitle("Save File")
+        setNotificationDescription("Please select an Image and 3D Files to upload.")
+        setShow(true)
+        return
+      }
+
+     
+    const {name,price,material,category,about} = props.getObjectData()
+    if(name == "" || price == "" || material== "Select Material" || category  == "Select a Category" ||about == "")
+    {
+      setDialogType(2) //Error
+      setNotificationTitle("Save File")
+      setNotificationDescription("Please provide Name, Price, Material, Category and Description.")
+      setShow(true)
+      return
     }
-    
-    
-   
+
+      try {
+
+        setDialogType(3) //Info
+        setNotificationTitle("File Uploading")
+        setNotificationDescription("Uploading Files.")
+        setShow(true)  
+      //Upload file to web3.storage
+    const cid = await storage.put([new File([selectedGCODEFile],filename.current)]);
+    console.log(cid)
+ const objectData = {name: name, description:about,image:selectedFile ,gcode:`https://${cid}.ipfs.w3s.link`,price:price,material:material,category:category }
+ const metadata = await nftstorage.store(objectData) 
+ console.log(metadata.url)
+ props.setURIDATA(metadata.url)
+      setDialogType(1) //Success
+      setNotificationTitle("Save File")
+      setNotificationDescription("File saved sucessfully.")
+      setShow(true)
+ 
+  }catch(error)
+{
+  setDialogType(2) //Error
+  setNotificationTitle("Save File")
+  setNotificationDescription("Error Saving File.")
+  setShow(true)
+}
+    }
      
   
 
@@ -313,7 +379,7 @@ const ImagePanel=React.forwardRef<ImagePanelRef>((props:any,ref:any)=> {
                   Get 3d File
                 </button>
                 <button
-                 onClick={saveObject}
+                 onClick={()=>saveObject()}
                   className=" flex max-w-xs flex-1 items-center justify-center rounded-md border border-transparent bg-indigo-600 px-8 py-3 text-base font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-gray-50 sm:w-full"
                 >
                   Save 
@@ -373,9 +439,15 @@ const ImagePanel=React.forwardRef<ImagePanelRef>((props:any,ref:any)=> {
 </div>
 
 </div>
-   
+
     </div>}
-  
+    <Notification
+        type={dialogType}
+        show={show}
+        close={close}
+        title={notificationTitle}
+        description={notificationDescription}
+      />
   </>)
 })
 

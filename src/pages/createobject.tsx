@@ -33,7 +33,7 @@ const materials = [
 
 
 
-export default function Product() {
+export default function CreateObject() {
   const [categories,setCategories] = useState([])
   const [open, setOpen] = useState(false)
   const [selectedFile, setSelectedFile] = useState()
@@ -253,7 +253,7 @@ const close = async () => {
 
           {/* Product info */}
           <div className="mt-10 px-4 sm:mt-16 sm:px-0 lg:mt-0">
-            <h1 className="text-3xl font-bold tracking-tight text-white">Add Product</h1>
+            <h1 className="text-3xl font-bold tracking-tight text-white">Create Object</h1>
 
             <div className="mt-4 sm:col-span-3">
               <label htmlFor="country" className="block text-sm font-medium leading-6 text-white">

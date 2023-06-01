@@ -26,7 +26,7 @@ import { v4 as uuidv4 } from 'uuid';
     const { data: session,status } = useSession()
     const router  = useRouter()
     const aCode = useRef()
-   const { accessToken, refreshToken,accessTokenExpires,refreshTokenExpires } = useContext(TokenContext);
+   const { accessToken} = useContext(TokenContext);
 
    useEffect(()=>{
        async function getCategoryQuery()
@@ -121,14 +121,7 @@ import { v4 as uuidv4 } from 'uuid';
                           </Link>
                         </li>
 
-                        <li className="group relative">
-                          <Link
-                            href="/print"
-                            className="mx-8 flex py-2 text-base font-semibold text-[#bababa] group-hover:text-white lg:mr-0 lg:ml-8 lg:inline-flex lg:py-6 lg:px-0 xl:ml-12"
-                          >
-                            Print
-                          </Link>
-                        </li>
+                       
       
                        { session &&<li className="group submenu-item relative">
                           <Link
@@ -147,6 +140,12 @@ import { v4 as uuidv4 } from 'uuid';
                               className="block rounded py-[10px] px-4 text-sm font-medium text-[#bababa] hover:text-white"
                             >
                               Profile
+                            </Link>
+                            <Link
+                              href="/createobject"
+                              className="block rounded py-[10px] px-4 text-sm font-medium text-[#bababa] hover:text-white"
+                            >
+                              Create Object
                             </Link>
                             <Link
                               href="/myorders"

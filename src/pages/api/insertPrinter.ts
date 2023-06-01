@@ -27,7 +27,7 @@ export default function handler(req, res) {
     })
     .catch(err => {
      // console.error(err);
-      res.status(200).json({ sqlText: body.sqlText, resourceId:body.resourceId ,err:err.toString(),auth:body.authorization });
+      res.status(500).json({ sqlText: body.sqlText, resourceId:body.resourceId ,err:err.toString(),auth:body.authorization });
     });
   
 }

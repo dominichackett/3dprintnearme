@@ -47,7 +47,7 @@ export default function Home() {
 3D Print Near Me is a decentralized application that aims to create a sharing economy for 3D printing services, similar to platforms like Uber and Airbnb. The DApp connects individuals who own 3D printers with those who need 3D printing services, creating a community of shared resources and reducing waste. Users can sign up for the platform and create profiles that detail their 3D printing capabilities, including the type of printer they own, materials they can print with, and pricing options.                </p>
          <div className="flex flex-wrap items-center">
                 <Link
-                  href="/tracking"
+                  href="/marketplace"
                   className="mr-5 mb-5 inline-flex items-center justify-center rounded-md border-2 border-primary bg-primary py-3 px-7 text-base font-semibold text-white transition-all hover:bg-opacity-90"
                 >
                   Market Place

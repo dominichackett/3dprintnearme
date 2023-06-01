@@ -1,64 +1,25 @@
 
-import { Fragment, useState,useEffect,useRef } from 'react'
-import { Dialog, Tab, Transition,Menu } from '@headlessui/react'
-import { Disclosure, RadioGroup } from '@headlessui/react'
-import { StarIcon } from '@heroicons/react/20/solid'
-import { HeartIcon, MinusIcon, PlusIcon ,XMarkIcon} from '@heroicons/react/24/outline'
+import { Fragment, useState,useEffect,useRef,useContext } from 'react'
+import { Dialog, Transition,Menu } from '@headlessui/react'
+import isoCountries from 'i18n-iso-countries';
 
-import { ChevronDownIcon } from '@heroicons/react/20/solid'
+import { XMarkIcon } from '@heroicons/react/20/solid'
 import Header from '../components/Header/Header'
 import Footer from '@/components/Footer/Footer'
+import { useSigner  } from 'wagmi'
 
-const materials = [
-    { name: 'PLA',cost:12},
-    { name: 'ABS',cost:.05},
-    { name: 'PETG',cost:.01},
-    { name: 'NYLON',cost:.05},
-    { name: 'TPU',cost:.09},
-    { name: 'TPE',cost:1},
-  
-   
+import { TokenContext } from '../components/Context/spacetime';
+import { queryPrinter,insertPrinter,updatePrinter} from '../components/utils/utils';
+import Notification from '@/components/Notification/Notification'
+import { v4 as uuidv4 } from 'uuid';
+
+
+// Initialize the package with the desired locale (e.g., 'en')
+isoCountries.registerLocale(require('i18n-iso-countries/langs/en.json'));
+
+// Retrieve the country names outside of the component rendering
+const countryNames = Object.entries(isoCountries.getNames('en'));
  
-  ]
-
-
-  const product = {
-    name: 'Zip Tote Basket',
-    price: '$140',
-    rating: 4,
-    images: [
-      {
-        id: 1,
-        name: 'Angled view',
-        src: 'https://tailwindui.com/img/ecommerce-images/product-page-03-product-01.jpg',
-        alt: 'Angled front view with bag zipped and handles upright.',
-      },
-      // More images...
-    ],
-    colors: [
-      { name: 'Washed Black', bgColor: 'bg-gray-700', selectedColor: 'ring-gray-700' },
-      { name: 'White', bgColor: 'bg-white', selectedColor: 'ring-gray-400' },
-      { name: 'Washed Gray', bgColor: 'bg-gray-500', selectedColor: 'ring-gray-500' },
-    ],
-    description: `
-      <p>The Zip Tote Basket is the perfect midpoint between shopping tote and comfy backpack. With convertible straps, you can hand carry, should sling, or backpack this convenient and spacious bag. The zip top and durable canvas construction keeps your goods protected for all-day use.</p>
-    `,
-    details: [
-      {
-        name: 'Features',
-        items: [
-          'Multiple strap configurations',
-          'Spacious interior with top zip',
-          'Leather handle and tabs',
-          'Interior dividers',
-          'Stainless strap loops',
-          'Double stitched construction',
-          'Water-resistant',
-        ],
-      },
-      // More sections...
-    ],
-  }
   
   function classNames(...classes) {
     return classes.filter(Boolean).join(' ')
@@ -81,7 +42,20 @@ const materials = [
     for (let i = 0; i < items.length; i += itemsPerRow) {
       rows.push(items.slice(i, i + itemsPerRow));
     }
-  
+    useEffect(()=>{
+      const _selected = []
+      console.log("M1")
+      for (let i = 0; i < items.length; i++) {
+        if(items[i].checked)  
+          _selected.push(items[i].name)
+          console.log("We Selected")
+      }
+      console.log(_selected)
+      console.log(items)
+      setSelectedItems(_selected)
+
+    },[])
+    
     return (
       <div className="grid grid-cols-1 gap-4 l sm:grid-cols-2">
         {rows.map((row, rowIndex) => (
@@ -102,7 +76,11 @@ const materials = [
                 </label>
                 <input
                   type="number"
-                  className={`border rounded-md p-1 ml-2 w-${longest / 2}`}
+                  name={item.name+"_cost"}
+                  id={item.name+"_cost"}
+
+                  defaultValue={item.cost}
+                  className={`p-2 text-black border rounded-md p-1 ml-2 w-${longest / 2}`}
                 />
                
               </div>
@@ -113,35 +91,128 @@ const materials = [
     );
   }
   
-export default function Product() {
+export default function Printer() {
   const [open, setOpen] = useState(false)
-  const [selectedColor, setSelectedColor] = useState(product.colors[0])
-  const [selectedFile, setSelectedFile] = useState()
-  const [preview, setPreview] = useState()
+ 
   const longest = useRef(4)
-  const onSelectFile = (e) => {
-    if (!e.target.files || e.target.files.length === 0) {
-        setSelectedFile(undefined)
-        return
-    }
+  const isSaving = useRef(false)
+  const [isClient, setIsClient] = useState(false);
+  const [gotPrinterInfo,setGotPrinterInfo] = useState(false)
+  const [printerExist,setPrinterExist] = useState(false)
+  const { accessToken } = useContext(TokenContext);
+  const [name,setName] = useState()
+  const [id,setId] = useState()
+  const [url,setUrl]  = useState()
+  const [city,setCity] = useState()
+  const [state,setState] = useState()
+  const [zip,setZip] = useState()
+  const [country,setCountry] = useState()
+  const [info,setInfo] = useState()
+  const [rate,setRate] = useState(0)
+  const [refreshData,setRefreshData] = useState(new Date())
+  const { data: signer} = useSigner()
+
+  const [materials,setMaterials] = useState([
   
-    // I've kept this example simple by using the first image instead of multiple
-    setSelectedFile(e.target.files[0])
+   
+ 
+  ])
+  // NOTIFICATIONS functions
+const [notificationTitle, setNotificationTitle] = useState();
+const [notificationDescription, setNotificationDescription] = useState();
+const [dialogType, setDialogType] = useState(1);
+const [show, setShow] = useState(false);
+const close = async () => {
+  setShow(false);
+};
+  useEffect(() => {
+    
+
+    setIsClient(true);
+  }, []);
+
+  useEffect(() => {
+    async function getPrinterInfo()
+    {
+        try{ 
+        const printer = await queryPrinter(accessToken,await signer?.getAddress(),null,null,null,null,null)
+         console.log(printer)
+         setGotPrinterInfo(true)
+         if(printer.lenght > 0)
+           setPrinterExist(true)
+           setId(printer[0].ID)
+           setName(printer[0].NAME)
+           setUrl(printer[0].URL)
+           setCity(printer[0].CITY)
+           setState(printer[0].STATE)
+           setZip(printer[0].ZIP)
+           setCountry(printer[0].COUNTRY)
+           setInfo(printer[0].INFO)
+           setRate(printer[0].RATE)
+           setMaterials(JSON.parse(printer[0].MATERIALS))
+           setPrinterExist(true)
+           console.log(printer[0].MATERIALS)
+        }
+        catch(_error)
+        {
+        }  
+    }
+
+    if(accessToken)
+      getPrinterInfo()
+
+  }, [accessToken,refreshData]);
+
+  const savePrinter = async (e)=>
+  {
+    e.preventDefault()
+    isSaving.current = true
+    const _name  = document.getElementById("name").value
+    const _url = document.getElementById("url").value
+    const _rate = document.getElementById("rate").value
+    const _city = document.getElementById("city").value
+    const _state = document.getElementById("state").value
+    const _zip = document.getElementById("zip").value
+    const _country = document.getElementById("country").value
+   const _info = document.getElementById("info").value
+   let _materials = []
+   for(const index in materials)
+   {
+      const cost =  document.getElementById(materials[index].name+"_cost").value
+      _materials.push({name:materials[index].name,cost:cost,checked:document.getElementById(materials[index].name).checked})
+      console.log(document.getElementById(materials[index].name).checked)
+   }
+   
+
+
+   try {
+         if(!printerExist)
+         { 
+          const _id =uuidv4()
+          await insertPrinter(accessToken,_id,await signer?.getAddress(),_name,_rate,_city,_state,_zip,_country,JSON.stringify(_materials),_info,_url)
+          setPrinterExist(true) 
+        }else
+        {
+          await updatePrinter(accessToken,id,await signer?.getAddress(),_name,_rate,_city,_state,_zip,_country,JSON.stringify(_materials),_info,_url)
+          
+        }
+        setDialogType(1) //Success
+        setNotificationTitle("Save Printer")
+        setNotificationDescription("Printer Saved.")
+        setShow(true)
+        setRefreshData(new Date())
+        isSaving.current = false
+   }catch(error){
+    setDialogType(2) //Error
+    setNotificationTitle("Save Printer")
+    setNotificationDescription("Error Saving Printer.")
+    setShow(true)
+    isSaving.current = false
+   }
   }
 
-   // create a preview as a side effect, whenever selected file is changed
- useEffect(() => {
-    if (!selectedFile) {
-        setPreview(undefined)
-        return
-    }
-  
-    const objectUrl = URL.createObjectURL(selectedFile)
-    setPreview(objectUrl)
-  
-    // free memory when ever this component is unmounted
-    return () => URL.revokeObjectURL(objectUrl)
-  }, [selectedFile])
+ 
+
   return (
     <div className="bg-black">
       {/* Mobile menu */}
@@ -193,6 +264,8 @@ export default function Product() {
 
       <Header />
       <main>
+      <form onSubmit={savePrinter}>
+
       <div className="bg-black">
       <div className="mx-auto max-w-2xl px-4 py-16 sm:px-6 sm:py-24 lg:max-w-7xl lg:px-8">
       <h1 className="text-3xl font-bold tracking-tight text-white">Printer</h1>
@@ -208,10 +281,12 @@ export default function Product() {
       </label>
       <div className="mt-2">
         <input
+          required={true}
+          defaultValue={name}
           id="name"
           name="name"
           autoComplete="name"
-          className="block w-full rounded-md border-0 py-1.5 text-white shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:max-w-xs sm:text-sm sm:leading-6"
+          className="p-2 block w-full rounded-md border-0 py-1.5 text-black shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:max-w-xs sm:text-sm sm:leading-6"
         />
       </div>
     </div>
@@ -221,9 +296,11 @@ export default function Product() {
       </label>
       <div className="mt-2">
         <input
+        required={true}
+          defaultValue={url}
           id="url"
           name="url"
-          className="block w-full rounded-md border-0 py-1.5 text-white shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:max-w-xs sm:text-sm sm:leading-6"
+          className="p-2 block w-full rounded-md border-0 py-1.5 text-black shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:max-w-xs sm:text-sm sm:leading-6"
         />
       </div>
     </div>
@@ -235,10 +312,12 @@ export default function Product() {
       </label>
       <div className="mt-2">
         <input
+         required={true}
+         defaultValue={rate}
           type="number"
           id="rate"
           name="rate"
-          className="block w-full rounded-md border-0 py-1.5 text-white shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:max-w-xs sm:text-sm sm:leading-6"
+          className="p-2 block w-full rounded-md border-0 py-1.5 text-black shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:max-w-xs sm:text-sm sm:leading-6"
         />
       </div>
     </div>
@@ -249,10 +328,12 @@ export default function Product() {
               </label>
               <div className="mt-2">
                 <input
+                  required={true}
+                  defaultValue={city} 
                   id="city"
                   name="city"
                   autoComplete="city"
-                  className="block w-full rounded-md border-0 py-1.5 text-white shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:max-w-xs sm:text-sm sm:leading-6"
+                  className="p-2 block w-full rounded-md border-0 py-1.5 text-black shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:max-w-xs sm:text-sm sm:leading-6"
                 />
                   
               </div>
@@ -264,10 +345,12 @@ export default function Product() {
               </label>
               <div className="mt-2">
                 <input
+                  required={true}
+                  defaultValue={state}
                   id="state"
                   name="state"
                   autoComplete="state"
-                  className="block w-full rounded-md border-0 py-1.5 text-white shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:max-w-xs sm:text-sm sm:leading-6"
+                  className="p-2 block w-full rounded-md border-0 py-1.5 text-black shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:max-w-xs sm:text-sm sm:leading-6"
                 />
                   
               </div>
@@ -280,10 +363,12 @@ export default function Product() {
               </label>
               <div className="mt-2">
                 <input
+                  required={true}
+                  defaultValue={zip}
                   id="zip"
                   name="zip"
                   autoComplete="zip"
-                  className="block w-full rounded-md border-0 py-1.5 text-white shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:max-w-xs sm:text-sm sm:leading-6"
+                  className="p-2 block w-full rounded-md border-0 py-1.5 text-black shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:max-w-xs sm:text-sm sm:leading-6"
                 />
                   
               </div>
@@ -296,16 +381,23 @@ export default function Product() {
                 Country
               </label>
               <div className="mt-2">
-                <select
-                  id="category"
-                  name="category"
-                  autoComplete="category"
-                  className="block w-full rounded-md border-0 py-1.5 text-white shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:max-w-xs sm:text-sm sm:leading-6"
-                >
-                  <option>United States</option>
-                  <option>Canada</option>
-                  <option>Mexico</option>
-                </select>
+            {isClient &&   <select
+      required={true}
+      value={country}
+      id="country"
+      name="country"
+      autoComplete="country"
+      className="block w-full rounded-md border-0 py-1.5 text-black shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:max-w-xs sm:text-sm sm:leading-6"
+    >
+     <option value="">Select a Country</option>
+
+      {countryNames.map(([code, name]) => (
+
+        <option key={code} value={code}>
+          {name}
+        </option>
+      ))}
+    </select>}
               </div>
             </div>
 
@@ -313,7 +405,7 @@ export default function Product() {
             <label htmlFor="about" className="block text-sm font-medium leading-6 text-white">
                 Materials
               </label>
-      <CheckboxGroup items={materials} itemsPerRow={2} longest={longest} />
+      {materials.length > 0 && <CheckboxGroup items={materials} itemsPerRow={2} longest={longest} />}
      
     </div>
             <div className="mt-4 sm:col-span-2">
@@ -322,22 +414,24 @@ export default function Product() {
               </label>
               <div className="mt-2">
               <textarea
-                  id="about"
-                  name="about"
+                required={true}
+                 
+                  id="info"
+                  name="info"
                   rows={10}
-                  className="block w-full rounded-md border-0 py-1.5 text-white shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
-                  defaultValue={''}
+                  className="p-2 block w-full rounded-md border-0 py-1.5 text-black shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                  defaultValue={info}
                 />
                   
               </div>
             </div>
          
-            <form className="mt-6">
          
 
             
               <div className="sm:flex-col1 mt-10 flex">
                 <button
+                 disabled={isSaving.current || gotPrinterInfo==false}
                   type="submit"
                   className="mr-2 flex max-w-xs flex-1 items-center justify-center rounded-md border border-transparent bg-indigo-600 px-8 py-3 text-base font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-gray-50 sm:w-full"
                 >
@@ -347,14 +441,21 @@ export default function Product() {
                
 
               </div>
-            </form>
+           
 
       
           </div>
         </div>
       </div>
+      </form>
         </main>
-
+        <Notification
+        type={dialogType}
+        show={show}
+        close={close}
+        title={notificationTitle}
+        description={notificationDescription}
+      />
  <Footer />
      
     </div>

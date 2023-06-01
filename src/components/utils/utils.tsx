@@ -403,13 +403,13 @@ export const insertCategory = async (authToken: string,id:string,name:string) =>
   };
 
 
-  export const insertPrinter = async (authToken: string,id:string,owner:string,name:string,rate:number,city:string,state:string,zip:string,country:string) => {
+  export const insertPrinter = async (authToken: string,id:string,owner:string,name:string,rate:number,city:string,state:string,zip:string,country:string,materials:string,info:string,url:string) => {
     const options = {
      method:'Post',
       body: JSON.stringify({
         sqlText:
-          `INSERT into PRINTNEARME.PRINTERS (ID,OWNER,NAME,RATE,CITY,STATE,ZIP,COUNTRY) 
-          VALUES('${id}','${owner}','${name}',${rate},'${city}','${state}','${zip}','${country}')`,
+          `INSERT into PRINTNEARME.PRINTERS (ID,OWNER,NAME,RATE,CITY,STATE,ZIP,COUNTRY,MATERIALS,INFO,URL) 
+          VALUES('${id}','${owner}','${name}',${rate},'${city}','${state}','${zip}','${country}','${materials}','${info}','${url}')`,
         resourceId: 'PRINTNEARME.PRINTERS',
       
      
@@ -436,19 +436,54 @@ export const insertCategory = async (authToken: string,id:string,name:string) =>
     }
   };
 
+  export const updatePrinter = async (authToken: string,id:string,owner:string,name:string,rate:number,city:string,state:string,zip:string,country:string,materials:string,info:string,url:string) => {
+    const options = {
+     method:'Post',
+      body: JSON.stringify({
+        sqlText:
+          `UPDATE PRINTNEARME.PRINTERS  
+        set OWNER='${owner}',NAME='${name}',RATE=${rate},CITY='${city}',STATE='${state}',ZIP='${zip}',COUNTRY='${country}',MATERIALS='${materials}',INFO='${info}' ,URL='${url}' Where ID='${id}' `,
+        resourceId: 'PRINTNEARME.PRINTERS',
+      
+     
+        authorization: `Bearer ${authToken}`,
+             }),
+    };
+   console.log(options)
+    try {
+      const response = await fetch(
+        'http://localhost:3000/api/insertPrinter',
+        options
+      );
+      if (response.ok) {
+        const data = await response.json();
+        console.log(data)
+        return data;
+      } else {
+        console.log(response)
+        throw new Error(response.json());
+      }
+    } catch (error) {
+      console.error(error);
+      throw error;
+    }
+  };
 
-  export const queryPrinter = async (authToken: string,name:string,city:string,state:string,zip:string,country:string) => {
+
+
+  export const queryPrinter = async (authToken: string,owner:string,name:string,city:string,state:string,zip:string,country:string) => {
     
     let whereClause = ""
-    whereClause += (name != null ? name:"")
-    whereClause += (city != null ? (whereClause !=""? ` and city='${city}'`:city):"")
-    whereClause += (state != null ? (whereClause !=""? ` and state='${state}'`:state):"")
-    whereClause += (zip != null ? (whereClause !=""? ` and zip='${zip}'`:zip):"")
-    whereClause += (country != null ? (whereClause !=""? ` and country='${country}'`:country):"")
-     
+   whereClause += (name != null ? `name='${name}'`:"")
+    whereClause += (city != null ? (whereClause !=""? ` and city='${city}'`:`city='${city}'`):"")
+    whereClause += (state != null ? (whereClause !=""? ` and state='${state}'`:`state='${state}'`):"")
+    whereClause += (zip != null ? (whereClause !=""? ` and zip='${zip}'`:`zip='${zip}'`):"")
+    whereClause += (country != null ? (whereClause !=""? ` and country='${country}'`:`country='${country}'`):"")
+    whereClause += (country != null ? (whereClause !=""? ` and owner='${owner}'`:`owner='${owner}'`):"")
+
     whereClause = (whereClause != "" ?`where ${whereClause}`:"")
 
-   
+   console.log(whereClause)
     const options = {
       method: 'POST',
       headers: {
@@ -462,7 +497,7 @@ export const insertCategory = async (authToken: string,id:string,name:string) =>
       body: JSON.stringify({
         sqlText:
           `SELECT * FROM PRINTNEARME.PRINTERS ${whereClause} ORDER BY NAME `,
-        resourceId: 'PRINTNEARME.MARKETPLACE',
+        resourceId: 'PRINTNEARME.PRINTERS',
       }),
     };
   

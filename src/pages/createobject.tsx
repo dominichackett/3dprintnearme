@@ -2,8 +2,8 @@
 import { Fragment, useState,useEffect,useRef,useContext } from 'react'
 import { Dialog, Tab, Transition } from '@headlessui/react'
 import { XMarkIcon} from '@heroicons/react/24/outline'
-import Header from '../components/Header/Header'
-import Footer from '@/components/Footer/Footer'
+import Header from '../components/Header/header'
+import Footer from '@/components/Footer/footer'
 import ImagePanel ,{ ImagePanelRef }  from '@/components/3dImage/3dimage'
 import { queryCategory} from '../components/utils/utils';
 import { TokenContext } from '../components/Context/spacetime';
@@ -60,7 +60,6 @@ const close = async () => {
 
   const getObjectData = ()=>{
     return {name:document.getElementById("name")?.value,
-            price:document.getElementById("price")?.value,
             material:document.getElementById("material")?.selectedOptions[0].textContent,
             category:document.getElementById("category")?.selectedOptions[0].textContent,
 
@@ -273,20 +272,7 @@ const close = async () => {
                 File Name
               </p>
               <p className="text-sm tracking-tight text-white">{filename}</p>
-            <div className="mt-4 sm:col-span-3">
-              <label htmlFor="price" className="block text-sm font-medium leading-6 text-white">
-                Price
-              </label>
-              <div className="mt-2">
-                <input
-                  type="number"
-                  id="price"
-                  name="price"
-                  className="p-2 block w-full rounded-md border-0 py-1.5 text-black shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:max-w-xs sm:text-sm sm:leading-6"
-                />
-                  
-              </div>
-            </div>
+          
             <div className="mt-4 sm:col-span-3">
               <label htmlFor="material" className="block text-sm font-medium leading-6 text-white">
                 Select Material

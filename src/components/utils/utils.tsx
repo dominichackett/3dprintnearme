@@ -1,8 +1,7 @@
 import { decodeBase64 } from 'tweetnacl-util';
 import nacl from 'tweetnacl'
 
-import { derivePublicKey, sign } from 'ed25519';
-
+import { PNMTADDRESS } from '../Contracts/contracts';
 export const getAutenticationCodeSXT = async ()=> {
     
   return  fetch("http://localhost:3000/api/getAuthCode")
@@ -296,6 +295,40 @@ export const insertCategory = async (authToken: string,id:string,name:string) =>
     }
   };
 
+  export const queryMarketPlaceByOwner = async (authToken: string,owner:string) => {
+    const options = {
+      method: 'POST',
+      headers: {
+        accept: 'application/json',
+        'content-type': 'application/json',
+        authorization: `Bearer ${authToken}`,
+        biscuit: `${process.env.NEXT_PUBLIC_BISCUIT_CATEGORY}`,
+      originApp: '3D Print Near Me',
+   
+      },
+      body: JSON.stringify({
+        sqlText:
+          `SELECT * FROM PRINTNEARME.MARKETPLACE Where owner='${owner}' ORDER BY DATELISTED DESC`,
+        resourceId: 'PRINTNEARME.MARKETPLACE',
+      }),
+    };
+  
+    try {
+      const response = await fetch(
+        process.env.NEXT_PUBLIC_SXT_URL + 'v1/sql/dql',
+        options
+      );
+      if (response.ok) {
+        const data = await response.json();
+        return data;
+      } else {
+        throw new Error('Request failed');
+      }
+    } catch (error) {
+      console.error(error);
+      throw error;
+    }
+  };
 
   export const insertOrder = async (authToken: string,id:string,dateplaced:string,owner:string,printer:string,status:number,tokenid:number,category:string) => {
     const options = {
@@ -508,6 +541,45 @@ export const insertCategory = async (authToken: string,id:string,name:string) =>
       );
       if (response.ok) {
         const data = await response.json();
+        return data;
+      } else {
+        throw new Error('Request failed');
+      }
+    } catch (error) {
+      console.error(error);
+      throw error;
+    }
+  };
+
+
+  export const queryMyObjects = async (authToken: string,owner:string) => {
+    
+    
+    const options = {
+      method: 'POST',
+      headers: {
+        accept: 'application/json',
+        'content-type': 'application/json',
+        authorization: `Bearer ${authToken}`,
+      //  biscuit: `${process.env.NEXT_PUBLIC_BISCUIT_PRINTER}`,
+      originApp: '3D Print Near Me',
+   
+      },
+      body: JSON.stringify({
+        sqlText:
+          `SELECT * FROM MUMBAI.ERC721_TRANSFER Where CONTRACT_ADDRESS='${PNMTADDRESS}'`,
+        resourceId: 'MUMBAI.ERC721_TRANSFER',
+      }),
+    };
+  
+    try {
+      const response = await fetch(
+        process.env.NEXT_PUBLIC_SXT_URL + 'v1/sql/dql',
+        options
+      );
+      if (response.ok) {
+        const data = await response.json();
+        console.log(data)
         return data;
       } else {
         throw new Error('Request failed');

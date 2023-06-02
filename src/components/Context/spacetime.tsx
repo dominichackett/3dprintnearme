@@ -59,6 +59,8 @@ const TokenProvider = ({ children }: { children: React.ReactNode }) => {
             return
 
         const authCode = await getAutenticationCodeSXT()
+        if(authCode.type =='CLIENT: Resource already exists')
+        return
         console.log(authCode)
         const privateKeyBytes = decodeBase64(process.env.NEXT_PUBLIC_PRIVATE_KEY);
        

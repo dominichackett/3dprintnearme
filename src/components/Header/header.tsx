@@ -148,6 +148,12 @@ import { v4 as uuidv4 } from 'uuid';
                               Create Object
                             </Link>
                             <Link
+                              href="/myobjects"
+                              className="block rounded py-[10px] px-4 text-sm font-medium text-[#bababa] hover:text-white"
+                            >
+                              My Objects
+                            </Link>
+                            <Link
                               href="/myorders"
                               className="block rounded py-[10px] px-4 text-sm font-medium text-[#bababa] hover:text-white"
                             >

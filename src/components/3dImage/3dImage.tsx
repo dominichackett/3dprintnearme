@@ -77,8 +77,8 @@ const close = async () => {
     useEffect(()=>{
       console.log(props)
       if(props.id){
-        setPreviewGCODE("https://storage.googleapis.com/ucloud-v3/6127a7f9aa32f718b8c1ab4f.gcode")
-        fetch("https://storage.googleapis.com/ucloud-v3/6127a7f9aa32f718b8c1ab4f.gcode")
+        setPreviewGCODE(props.gcode)
+        fetch(props.gcode)
         .then(response => response.text())
         .then(data =>{
           
@@ -94,7 +94,7 @@ const close = async () => {
         }
     ); 
         })
-        .catch(error => console.error(error));
+        .catch(error => console.log(error));
       }
     },[])
 
@@ -267,12 +267,12 @@ const close = async () => {
       }
 
      
-    const {name,price,material,category,about} = props.getObjectData()
-    if(name == "" || price == "" || material== "Select Material" || category  == "Select a Category" ||about == "")
+    const {name,material,category,about} = props.getObjectData()
+    if(name == "" || material== "Select Material" || category  == "Select a Category" ||about == "")
     {
       setDialogType(2) //Error
       setNotificationTitle("Save File")
-      setNotificationDescription("Please provide Name, Price, Material, Category and Description.")
+      setNotificationDescription("Please provide Name, Material, Category and Description.")
       setShow(true)
       return
     }
@@ -286,7 +286,7 @@ const close = async () => {
       //Upload file to web3.storage
     const cid = await storage.put([new File([selectedGCODEFile],filename.current)]);
     console.log(cid)
- const objectData = {name: name, description:about,image:selectedFile ,gcode:`https://${cid}.ipfs.w3s.link`,price:price,material:material,category:category }
+ const objectData = {name: name, description:about,image:selectedFile ,gcode:`https://${cid}.ipfs.w3s.link/${filename.current}`,material:material,category:category,weight:weight,size:size,filament:filament,layercount:layerCount,printtime:printTime }
  const metadata = await nftstorage.store(objectData) 
  console.log(metadata.url)
  props.setURIDATA(metadata.url)
@@ -402,7 +402,7 @@ const close = async () => {
     <label
       for="file"
       className="cursor-pointer relative flex h-[480px] items-center justify-center rounded-lg border border-dashed border-[#A1A0AE] bg-[#353444] p-12 text-center"
-      style={{ backgroundImage: `url(${preview ? preview : '/images/default-image.jpg'})`, backgroundSize: 'contain', backgroundPosition: 'center', backgroundRepeat: 'no-repeat' }}
+      style={{ backgroundImage: `url(${preview ? preview : (props.image ? props.image: '/images/default-image.jpg')})`, backgroundSize: 'contain', backgroundPosition: 'center', backgroundRepeat: 'no-repeat' }}
     >
     </label>
   </div>}

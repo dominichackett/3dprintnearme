@@ -8,6 +8,9 @@ import Footer from '@/components/Footer/Footer'
 import ImagePanel ,{ ImagePanelRef } from '@/components/3dImage/3dimage'
 import { useRouter } from 'next/router'
 import Notification from '@/components/Notification/Notification'
+import { ethers } from 'ethers'
+import { PriceRTADDRESS,PNMTADDRESS, PRICERTABI,tokenContractAbi, exchangeAddress, exchangeABI } from '@/components/Contracts/contracts'
+import { useSigner  } from 'wagmi'
 
 const materials = [
     { name: 'PLA',cost:12},
@@ -47,6 +50,7 @@ export default function ViewItem() {
   const [material,setMaterial] = useState()
   const [description,setDescription] = useState()
   const router = useRouter()
+  const { data: signer} = useSigner()
 
  // NOTIFICATIONS functions
 const [notificationTitle, setNotificationTitle] = useState();
@@ -80,7 +84,99 @@ const close = async () => {
 
     const paymentTokenAddress = document.getElementById("payment")?.value 
     const paymentTokenName  =  document.getElementById("payment")?.selectedOptions[0].textContent
-   
+    let amount = ethers.utils.parseUnits(price.toString(),6)
+
+    const priceRTContract = new ethers.Contract(
+      PriceRTADDRESS,
+      PRICERTABI,
+      signer
+    );
+
+    const tokenContract = new ethers.Contract(
+      paymentTokenAddress,
+      tokenContractAbi,
+      signer
+    );
+
+    const exchangeContract = new ethers.Contract(
+      exchangeAddress,
+      exchangeABI,
+      signer
+    );
+  try{
+    if(paymentTokenAddress!='0x917a66BEA49a10E717a3779687d158563b3B1080')  // not USD
+   {
+
+     const spotPrice = await priceRTContract.getSpotPrice('usd', paymentTokenName)
+     console.log(spotPrice.toNumber()*price)
+     amount = ethers.utils.parseUnits((spotPrice.toNumber()*price).toString(),18)
+     console.log(amount)
+    
+    }
+
+    if(paymentTokenAddress!=0)
+    {
+   let tx = await tokenContract.callStatic.approve(exchangeAddress ,amount,{
+      gasLimit: 3000000})
+      console.log(tx)
+    
+      let tx1 = await tokenContract.approve( exchangeAddress,amount,{
+        gasLimit: 3000000})
+     
+        await  tx1.wait()
+       
+
+        
+      
+       let tx3 = await exchangeContract.callStatic.buyPAT(paymentTokenName ,itemId,{
+        gasLimit: 3000000})
+        console.log(tx3)
+      
+        let tx4 = await exchangeContract.buyPAT(paymentTokenName ,itemId,{
+          gasLimit: 3000000})
+       
+          await  tx4.wait()
+     }else
+     {
+
+      console.log(amount)
+      alert(itemId)
+      let tx5 = await exchangeContract.callStatic.buyPAT(paymentTokenName ,itemId,{
+       gasLimit: 3000000,value:amount})
+      
+let tx6 = await exchangeContract.buyPAT(paymentTokenName ,itemId,{
+          gasLimit: 3000000,value:amount})
+       
+          await  tx6.wait()
+
+     }
+
+     setDialogType(1) //Success
+     setNotificationTitle("Buy Now")
+     setNotificationDescription("Sucessfully bought object.")
+     setShow(true)
+
+  }catch(error)
+  {
+    if (error.code === 'TRANSACTION_REVERTED') {
+      console.log('Transaction reverted');
+      let revertReason = ethers.utils.parseRevertReason(error.data);
+      setNotificationDescription(revertReason);
+    }  else if (error.code === 'ACTION_REJECTED') {
+    setNotificationDescription('Transaction rejected by user');
+  }else {
+  // console.log(error)
+   //const errorMessage = ethers.utils.revert(error.reason);
+    setNotificationDescription(`Transaction failed with error: ${error.error.data.message}`);
+    console.log(error.error)
+  
+}
+    setDialogType(2) //Error
+    setNotificationTitle("Buy Now")
+
+    setShow(true)
+
+  }
 
   }
 

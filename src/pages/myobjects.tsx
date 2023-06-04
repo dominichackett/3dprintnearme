@@ -14,6 +14,7 @@ import { PNMTADDRESS,PNMTABI,PATADDRESS,exchangeAddress,exchangeABI } from '@/co
 import ListTokenDialog from "@/components/ListDialog/listdialog"
 import { v4 as uuidv4 } from 'uuid';
 import { format } from 'date-fns';
+import { useRouter } from "next/router";
 
   function classNames(...classes) {
     return classes.filter(Boolean).join(' ')
@@ -37,6 +38,8 @@ export default function MyObjects() {
   const [myobjects,setMyObjects] = useState([])
   const { accessToken } = useContext(TokenContext);
   const { data: signer} = useSigner()
+  const router = useRouter();
+
 
   // NOTIFICATIONS functions
 const [notificationTitle, setNotificationTitle] = useState();
@@ -68,7 +71,7 @@ useEffect(()=>{
       for(const index in ownedNfts)
       {
         
-        if(ownedNfts[index].contract.address == PATADDRESS || ownedNfts[index].contract.address ==PNMTADDRESS)
+        if( ownedNfts[index].contract.address ==PNMTADDRESS)
         {
            const options = {method: 'GET', headers: {accept: 'application/json'}};
 
@@ -77,10 +80,26 @@ useEffect(()=>{
            console.log(metadata)
            _myobjects.push({address:ownedNfts[index].contract.address,contractName:ownedNfts[index].contract.name,symbol:ownedNfts[index].contract.symbol,
             image:ownedNfts[index].image.cachedUrl,name:ownedNfts[index].name,description:ownedNfts[index].description
-            ,tokenId:ownedNfts[index].tokenId,category:metadata.category})
+            ,tokenId:ownedNfts[index].tokenId,category:metadata.categor,gcode:metadata?.gcode,material:metadata.materialy})
 
 
-       }
+       }else if(ownedNfts[index].contract.address == PATADDRESS )
+       {
+        const options = {method: 'GET', headers: {accept: 'application/json'}};
+        const _url = `https://polygon-mumbai.g.alchemy.com/nft/v3/${process.env.NEXT_PUBLIC_ALCHEMY_API_KEY}/getNFTsForContract?contractAddress=${PNMTADDRESS}&withMetadata=true&startToken=${ownedNfts[index].tokenId}&limit=1`
+        const response = await fetch(_url, options)
+        const nfts = await response.json()
+        const nftData = nfts.nfts
+        const data = await fetch(nftData[0].tokenUri,options)
+        const metadata = await data.json()
+        _myobjects.push({address:nftData[0].contract.address,contractName:nftData[0].contract.name,symbol:nftData[0].contract.symbol,
+          image:nftData[0].image.cachedUrl,name:nftData[0].name,description:nftData[0].description
+          ,tokenId:nftData[0].tokenId,category:metadata.category,gcode:metadata?.gcode,material:metadata.material})
+
+        
+        console.log(metadata)
+        console.log(_url)
+      }
 
        console.log(_myobjects)
      
@@ -209,6 +228,11 @@ const  list = (tokenid:string,name:string,_category:string)=>{
     setOpenListTokenDialog(false)
    }
      
+   const printItem = async(item:any)=>{
+   
+    router.push({pathname:`/printitem/${item.tokenId}`,query:{item:JSON.stringify(item)}});
+  
+  }
   return (
     <div className="bg-black">
       {/* Mobile menu */}
@@ -301,19 +325,30 @@ const  list = (tokenid:string,name:string,_category:string)=>{
                         className="h-full w-full object-cover object-center group-hover:opacity-75"
                       />
                     </div>
-                    <div className="mt-4 flex items-center justify-between text-base font-medium text-white">
+                    <div className="mt-2 flex items-center justify-between text-base font-medium text-white">
                       <h3>{object.name}</h3>
                       <p>{object.category}</p>
                     </div>
-                    <div className="mt-4 flex items-center justify-between text-base font-medium text-white">
+                    <div className="mt-2 flex items-center justify-between text-base font-medium text-white">
                     <p className="mt-1 text-sm italic text-gray-500">{object.contractName}</p>
+                    <p className="mt-1 text-sm italic text-gray-500">#{object.tokenId}</p>
+
+
+                </div>
+                    <div className="mt-1 flex items-center justify-between text-base font-medium text-white">
 
                  {object.address == PNMTADDRESS &&   <button
                   className="mr-5 mb-5 inline-flex items-center justify-center rounded-md border-2 border-primary bg-primary  px-5 text-base font-semibold text-white transition-all hover:bg-opacity-90"
                   onClick={()=>list(object.tokenId,object.name,object.category)}
                 >
                   {(listed.get(object.tokenId) ? "Listed":"List")}
-                </button>}                    </div>
+                </button>}       
+                    <button
+                  className="mb-5 inline-flex items-center justify-center rounded-md border-2 border-primary bg-primary  px-5 text-base font-semibold text-white transition-all hover:bg-opacity-90"
+                  onClick={()=>printItem(object)}
+                >
+                 Print
+                </button>                  </div>
                    </div>              ))}
               </div>
             </section>

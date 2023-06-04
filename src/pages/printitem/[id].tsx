@@ -146,6 +146,11 @@ export default function ViewItem() {
   const [filamentCost,setFilamentCost] = useState(0)
   const [itemPrice,setItemPrice] = useState(12)
   const[itemId,setItemId] = useState()
+  const [imageFile,setImageFile] = useState()
+  const [gcodeFile,setGcodeFile] = useState()
+  const [price,setPrice] = useState()
+  const [material,setMaterial] = useState()
+  const [description,setDescription] = useState()
   const router = useRouter()
 
   const imagePanelRef = useRef<ImagePanelRef>(null)
@@ -164,11 +169,17 @@ export default function ViewItem() {
   const setPrinter = (printer:any) =>{
       alert("Printer")
   }
-  //const { id } = router.query
   useEffect(()=>{
     if(!router.isReady) return;
     const { id } = router.query
+    const item = JSON.parse(router.query?.item)
+    setImageFile(item.image)
+    setGcodeFile(item.gcode)
+    setPrice(item.price)
+    setMaterial(item.material)
+    setDescription(item.description)
     setItemId(id)
+
     
 }, [router.isReady]);
   const setPrintData = (_filament:any,_printTime:any)=>{
@@ -281,7 +292,7 @@ export default function ViewItem() {
             <Tab.Panels className="aspect-h-1 aspect-w-1 w-full">
               {product.images.map((image) => (
                 <Tab.Panel key={image.id}>
-               {itemId && <ImagePanel ref={imagePanelRef} setPrintData={setPrintData} id={itemId} />}
+               {itemId && <ImagePanel setPrintData={setPrintData} id={itemId} image={imageFile} gcode={gcodeFile}/>}
 
                 </Tab.Panel>
               ))}
@@ -310,8 +321,8 @@ export default function ViewItem() {
               </label>
               <div className="mt-2">
                 <select
-                 onChange={materialChanged}
-
+                  value={material}
+                  disabled={true}
                   id="material"
                   name="material"
                   className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:max-w-xs sm:text-sm sm:leading-6"

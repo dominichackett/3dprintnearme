@@ -1,15 +1,12 @@
 
 import { Fragment, useState,useEffect ,useContext} from 'react'
-import { Dialog, Menu, Popover, Tab, Transition } from '@headlessui/react'
-import { HeartIcon, MinusIcon, PlusIcon ,XMarkIcon} from '@heroicons/react/24/outline'
-import Link from 'next/link'
+import { Dialog, Menu, Popover, Transition } from '@headlessui/react'
+import { XMarkIcon} from '@heroicons/react/24/outline'
 import { ChevronDownIcon } from '@heroicons/react/20/solid'
 import Header from '../components/Header/header'
 import Footer from '@/components/Footer/footer'
 import { TokenContext } from '../components/Context/spacetime';
-import Notification from '@/components/Notification/Notification'
 import { useSigner  } from 'wagmi'
-import { ethers } from 'ethers'
 import { queryMarketPlace } from '@/components/utils/utils'
 import { PNMTADDRESS,PNMTABI,PATADDRESS,exchangeAddress,exchangeABI } from '@/components/Contracts/contracts'
 import { useRouter } from "next/router";

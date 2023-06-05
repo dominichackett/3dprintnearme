@@ -62,7 +62,7 @@ contract PrintNearMeToken is ERC721, ERC721URIStorage, Pausable, AccessControl, 
     function supportsInterface(bytes4 interfaceId)
         public
         view
-        override(ERC721, AccessControl)
+        override(ERC721,ERC721URIStorage, AccessControl)
         returns (bool)
     {
         return super.supportsInterface(interfaceId);

@@ -30,6 +30,7 @@ export default function MyObjects() {
   
   const [open,setOpen] = useState(false)
   const [listed,setListed] = useState(new Map())
+
   const [gotListed,setGotListed] = useState(false)
   const [refreshData,setRefreshData] = useState(new Date())
   const [tokenId,setTokenId] = useState()
@@ -92,7 +93,7 @@ useEffect(()=>{
         const nftData = nfts.nfts
         const data = await fetch(nftData[0].tokenUri,options)
         const metadata = await data.json()
-        _myobjects.push({address:nftData[0].contract.address,contractName:nftData[0].contract.name,symbol:nftData[0].contract.symbol,
+        _myobjects.push({address:PATADDRESS,contractName:nftData[0].contract.name,symbol:nftData[0].contract.symbol,
           image:nftData[0].image.cachedUrl,name:nftData[0].name,description:nftData[0].description
           ,tokenId:nftData[0].tokenId,category:metadata.category,gcode:metadata?.gcode,material:metadata.material})
 
@@ -119,9 +120,11 @@ useEffect(()=>{
            console.log(results.length)
           console.log(results)
           let _listed = new Map()
+
           for(const index in results)
           {
-             _listed.set(results[index].ITEMID ,true)   
+             _listed.set(parseInt(results[index].ITEMID) ,true)   
+ 
           }
           
           setGotListed(true)
@@ -132,10 +135,10 @@ useEffect(()=>{
 
          }  
      }
-     if(accessToken)
+     if(accessToken && signer)
      getMyListings()
    console.log(accessToken)
-},[accessToken,refreshData])
+},[accessToken,refreshData,signer])
 
 const listToken = async (tokenid:string,price:any,_category:string)=>{
     console.log(price)
@@ -229,7 +232,7 @@ const  list = (tokenid:string,name:string,_category:string)=>{
    }
      
    const printItem = async(item:any)=>{
-   
+    
     router.push({pathname:`/printitem/${item.tokenId}`,query:{item:JSON.stringify(item)}});
   
   }

@@ -12,7 +12,8 @@ import { TokenContext } from '../components/Context/spacetime';
 import { queryPrinter,insertPrinter,updatePrinter} from '../components/utils/utils';
 import Notification from '@/components/Notification/Notification'
 import { v4 as uuidv4 } from 'uuid';
-
+import ethers from 'ethers'
+import { PrintObjectAddress,PrintObjectABI } from '@/components/Contracts/contracts';
 
 // Initialize the package with the desired locale (e.g., 'en')
 isoCountries.registerLocale(require('i18n-iso-countries/langs/en.json'));
@@ -186,11 +187,27 @@ const close = async () => {
 
 
    try {
+
+
+          
          if(!printerExist)
          { 
-          const _id =uuidv4()
-          await insertPrinter(accessToken,_id,await signer?.getAddress(),_name,_rate,_city,_state,_zip,_country,JSON.stringify(_materials),_info,_url)
-          setPrinterExist(true) 
+          
+          const printContract = new ethers.Contract(
+            PrintObjectAddress,
+            PrintObjectABI,
+            signer
+          );
+          let tx = await printContract.callStatic.addprinter(name,name,city,'usd',1,{
+            gasLimit: 3000000})
+          
+           let tx1 = await printContract.addprinter(name,name,city,'usd',1,{
+            gasLimit: 3000000})
+          
+             await tx1.wait()
+            const _id =uuidv4()
+            await insertPrinter(accessToken,_id,await signer?.getAddress(),_name,_rate,_city,_state,_zip,_country,JSON.stringify(_materials),_info,_url)
+            setPrinterExist(true) 
         }else
         {
           await updatePrinter(accessToken,id,await signer?.getAddress(),_name,_rate,_city,_state,_zip,_country,JSON.stringify(_materials),_info,_url)

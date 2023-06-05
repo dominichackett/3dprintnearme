@@ -512,7 +512,7 @@ export const insertCategory = async (authToken: string,id:string,name:string) =>
     whereClause += (state != null ? (whereClause !=""? ` and state='${state}'`:`state='${state}'`):"")
     whereClause += (zip != null ? (whereClause !=""? ` and zip='${zip}'`:`zip='${zip}'`):"")
     whereClause += (country != null ? (whereClause !=""? ` and country='${country}'`:`country='${country}'`):"")
-    whereClause += (country != null ? (whereClause !=""? ` and owner='${owner}'`:`owner='${owner}'`):"")
+    whereClause += (owner != null ? (whereClause !=""? ` and owner='${owner}'`:`owner='${owner}'`):"")
 
     whereClause = (whereClause != "" ?`where ${whereClause}`:"")
 

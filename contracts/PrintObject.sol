@@ -24,7 +24,6 @@ contract PrintObject is Ownable, ReentrancyGuard {
         string location;
         uint status;
         string feeCurrency;
-        uint cost;
         
     }
 
@@ -50,34 +49,33 @@ contract PrintObject is Ownable, ReentrancyGuard {
         string currency       
     );
 
-    function printObject( uint _tokenId, string memory _printerName, string memory _currency) public {
+    function printObject( uint _tokenId, string memory _printerName, string memory _currency,uint cost) payable public {
 
+         require(printerList[_printerName].printOwner != address(0),"Printer doesn't exist");
+        require(printerList[_printerName].status == 1,"Printer isn't active");   
+        require(PNMT.ownerOf(_tokenId) == msg.sender || PAT.balanceOf(msg.sender, _tokenId) > 0,"Not authorized to print this object");
         if(PNMT.ownerOf(_tokenId) == msg.sender){
 
-            sendToPrint(_tokenId, _printerName, 1);
 
         } else {       
         
-            require(PAT.balanceOf(msg.sender, _tokenId) > 0, 'Less Apporval Tokens than requested');
-            sendToPrint(_tokenId, _printerName, 1);
             PAT.burn(msg.sender, _tokenId, 1);
         
         }
 
         require(keccak256(abi.encodePacked((_currency))) ==keccak256(abi.encodePacked((printerList[_printerName].feeCurrency))) , "Currency needs to same as Listed Currency");
-        balances[printerList[_printerName].printOwner][_currency] += printerList[_printerName].cost ;
+        balances[printerList[_printerName].printOwner][_currency] += cost ;
 
         if (keccak256(abi.encodePacked((_currency))) == keccak256(abi.encodePacked(('matic')))) {
 
-            require(address(this).balance > printerList[_printerName].cost, "Not enough balance in contract");            
-            (bool success, ) = payable(msg.sender).call{value: printerList[_printerName].cost}("");
-            require(success, "Transfer failed");
+             require( msg.value  >= cost, "Insufficient Amount");
+
         } else {        
-            require(getBalanceOfToken(tokenList[_currency], msg.sender) > printerList[_printerName].cost,"Insufficient Balance");
-            IERC20(tokenList[_currency]).transferFrom(msg.sender, address(this), printerList[_printerName].cost);
+            require(getBalanceOfToken(tokenList[_currency], msg.sender) > cost,"Insufficient Balance");
+            IERC20(tokenList[_currency]).transferFrom(msg.sender, address(this), cost);
         }
 
-        emit ObjectPrinted(msg.sender,_tokenId, _printerName, printerList[_printerName].cost, _currency );
+        emit ObjectPrinted(msg.sender,_tokenId, _printerName, cost, _currency );
         
         
     }
@@ -88,21 +86,16 @@ contract PrintObject is Ownable, ReentrancyGuard {
 
  
 
-    function addprinter(string memory _name, string memory _printDetails, string memory _location, string memory _feeCurrency, uint _status, uint _amount) public {
+    function addprinter(string memory _name, string memory _printDetails, string memory _location, string memory _feeCurrency, uint _status) public {
 
-        require(printerList[_name].printOwner == address(0));
+        require(printerList[_name].printOwner == address(0),'Printer already exisit.');
         require(tokenList[_feeCurrency] != address(0), 'The Fee Currency not whitelisted');
-        printerList[_name] = Printer(msg.sender,_printDetails, _location, _status , _feeCurrency, _amount);
+        printerList[_name] = Printer(msg.sender,_printDetails, _location, _status , _feeCurrency);
 
     }  
 
 
-    function sendToPrint( uint _tokenId, string memory printerName, uint _count) public {
-
-        require(printerList[printerName].printOwner != address(0));
-        require(printerList[printerName].status == 1);       
-
-    }
+    
 
     function withdrawProceeds(string memory _currency, uint _amount) external nonReentrant {
 
@@ -125,6 +118,10 @@ contract PrintObject is Ownable, ReentrancyGuard {
         }
         emit Withdrawls(msg.sender , _currency, _amount);
 
+    }
+
+    function addsupportedCurrencies(string memory _name, address _tokenContract) public onlyOwner {
+        tokenList[_name] = _tokenContract;
     }
 
 }

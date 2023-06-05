@@ -54,14 +54,7 @@ contract PrintObject is Ownable, ReentrancyGuard {
          require(printerList[_printerName].printOwner != address(0),"Printer doesn't exist");
         require(printerList[_printerName].status == 1,"Printer isn't active");   
         require(PNMT.ownerOf(_tokenId) == msg.sender || PAT.balanceOf(msg.sender, _tokenId) > 0,"Not authorized to print this object");
-        if(PNMT.ownerOf(_tokenId) == msg.sender){
-
-
-        } else {       
-        
-            PAT.burn(msg.sender, _tokenId, 1);
-        
-        }
+       
 
         require(keccak256(abi.encodePacked((_currency))) ==keccak256(abi.encodePacked((printerList[_printerName].feeCurrency))) , "Currency needs to same as Listed Currency");
         balances[printerList[_printerName].printOwner][_currency] += cost ;

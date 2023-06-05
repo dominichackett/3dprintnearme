@@ -140,8 +140,15 @@ const printItem = async()=>
     
       let tx1 = await tokenContract.approve( tokenContractAddress,amount,{
         gasLimit: 3000000})
-     
         await  tx1.wait()
+        let tx2 = await printContract.callStatic.printObject(itemId,printer.NAME,"usd" ,amount,{
+          gasLimit: 3000000})
+          console.log(tx)
+        
+          let tx3 = await printContract.printObject(itemId,printer.NAME,"usd" ,amount,{
+            gasLimit: 3000000})
+     
+        await  tx3.wait()
         setDialogType(1) //Success
         setNotificationTitle("Send to Printer")
         setNotificationDescription("Order sent to printer.")

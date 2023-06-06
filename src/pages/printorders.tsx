@@ -7,7 +7,7 @@ import { HeartIcon, MinusIcon, PlusIcon ,XMarkIcon} from '@heroicons/react/24/ou
 
 import { EllipsisVerticalIcon } from '@heroicons/react/24/outline'
 import { CheckCircleIcon } from '@heroicons/react/20/solid'
-import Header from '../components/Header/Header'
+import Header from '@/components/Header/Header'
 import Footer from '@/components/Footer/Footer'
 import { queryOrderForPrinter,updateOrderStatus } from '@/components/utils/utils'
 import { TokenContext } from '@/components/Context/spacetime';

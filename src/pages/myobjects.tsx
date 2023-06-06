@@ -3,7 +3,7 @@ import { Fragment, useState,useEffect,useContext } from 'react'
 import { Dialog, Popover, Tab, Transition } from '@headlessui/react'
 import { XMarkIcon} from '@heroicons/react/24/outline'
 import Link from 'next/link'
-import Header from '../components/Header/Header'
+import Header from '@/components/Header/Header'
 import Footer from '@/components/Footer/Footer'
 import { TokenContext } from '../components/Context/spacetime';
 import Notification from '@/components/Notification/Notification'

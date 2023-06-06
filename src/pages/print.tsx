@@ -5,7 +5,7 @@ import { StarIcon } from '@heroicons/react/20/solid'
 import { HeartIcon, MinusIcon, PlusIcon ,XMarkIcon} from '@heroicons/react/24/outline'
 
 import { ChevronDownIcon } from '@heroicons/react/20/solid'
-import Header from '../components/Header/Header'
+import Header from '@/components/Header/Header'
 import Footer from '@/components/Footer/Footer'
 import ImagePanel ,{ ImagePanelRef } from '@/components/3dImage/3dimage'
 import {PrinterSearchRef} from '@/components/PrinterSearch/PrinterSearch'

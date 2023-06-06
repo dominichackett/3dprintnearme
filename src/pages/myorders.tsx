@@ -4,7 +4,7 @@ import { Dialog, Transition,Menu } from '@headlessui/react'
 
 import { EllipsisVerticalIcon } from '@heroicons/react/24/outline'
 import { CheckCircleIcon,XMarkIcon } from '@heroicons/react/20/solid'
-import Header from '../components/Header/Header'
+import Header from '@/components/Header/Header'
 import Footer from '@/components/Footer/Footer'
 import { queryOrderByOwner } from '@/components/utils/utils'
 import { TokenContext } from '@/components/Context/spacetime';

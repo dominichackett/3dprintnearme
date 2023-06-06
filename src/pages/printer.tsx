@@ -4,7 +4,7 @@ import { Dialog, Transition,Menu } from '@headlessui/react'
 import isoCountries from 'i18n-iso-countries';
 
 import { XMarkIcon } from '@heroicons/react/20/solid'
-import Header from '../components/Header/Header'
+import Header from '@/components/Header/Header'
 import Footer from '@/components/Footer/Footer'
 import { useSigner  } from 'wagmi'
 

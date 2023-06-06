@@ -157,7 +157,7 @@ const printItem = async()=>
          };
 
          try
-         {const response = await fetch('http://localhost:3000/api/print',options)
+         {const response = await fetch(`${process.env.NEXT_PUBLIC_HOST_URL}/api/print,options`)
          console.log(response)
 
         if(response.ok) 

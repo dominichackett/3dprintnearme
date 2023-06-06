@@ -21,7 +21,7 @@ const TokenProvider = ({ children }: { children: React.ReactNode }) => {
       // Perform the refresh token request to obtain a new access token
 
 
-      const response =  await fetch('http://localhost:3000/api/refreshToken')
+      const response =  await fetch(`${process.env.NEXT_PUBLIC_HOST_URL}/api/refreshToken`)
 
       console.log(response)
       if (response.ok) {
@@ -89,7 +89,7 @@ const TokenProvider = ({ children }: { children: React.ReactNode }) => {
         })
       };
       // Fetch the access token
-      const accessTokenResponse =  await fetch('http://localhost:3000/api/getToken', options)
+      const accessTokenResponse =  await fetch(`${process.env.NEXT_PUBLIC_HOST_URL}/api/getToken`, options)
       if (accessTokenResponse.ok) {
         const { accessToken,refreshToken,accessTokenExpires,refreshTokenExpires } = await accessTokenResponse.json();
         setAccessToken(accessToken);

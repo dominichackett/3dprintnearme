@@ -4,7 +4,7 @@ import nacl from 'tweetnacl'
 import { PNMTADDRESS } from '../Contracts/contracts';
 export const getAutenticationCodeSXT = async ()=> {
     
-  return  fetch("http://localhost:3000/api/getAuthCode")
+  return  fetch(`${process.env.NEXT_PUBLIC_HOST_URL}/api/getAuthCode`)
     .then(response => response.json())
     .then(response => {return response})
     .catch(err => console.error(err));
@@ -140,7 +140,7 @@ export const insertCategory = async (authToken: string,id:string,name:string) =>
    console.log(options)
     try {
       const response = await fetch(
-        'http://localhost:3000/api/insertCategory',
+        `${process.env.NEXT_PUBLIC_HOST_URL}api/insertCategory`,
         options
       );
       if (response.ok) {
@@ -207,7 +207,7 @@ export const insertCategory = async (authToken: string,id:string,name:string) =>
    console.log(options)
     try {
       const response = await fetch(
-        'http://localhost:3000/api/deleteCategory',
+        `${process.env.NEXT_PUBLIC_HOST_URL}/api/deleteCategory`,
         options
       );
       if (response.ok) {
@@ -241,7 +241,7 @@ export const insertCategory = async (authToken: string,id:string,name:string) =>
    console.log(options)
     try {
       const response = await fetch(
-        'http://localhost:3000/api/insertMarketPlace',
+        `${process.env.NEXT_PUBLIC_HOST_URL}/api/insertMarketPlace`,
         options
       );
       if (response.ok) {
@@ -346,7 +346,7 @@ export const insertCategory = async (authToken: string,id:string,name:string) =>
    console.log(options)
     try {
       const response = await fetch(
-        'http://localhost:3000/api/insertOrder',
+        `${process.env.NEXT_PUBLIC_HOST_URL}/api/insertOrder`,
         options
       );
       if (response.ok) {
@@ -452,7 +452,7 @@ export const insertCategory = async (authToken: string,id:string,name:string) =>
    console.log(options)
     try {
       const response = await fetch(
-        'http://localhost:3000/api/insertPrinter',
+        `${process.env.NEXT_PUBLIC_HOST_URL}/api/insertPrinter`,
         options
       );
       if (response.ok) {
@@ -485,7 +485,7 @@ export const insertCategory = async (authToken: string,id:string,name:string) =>
    console.log(options)
     try {
       const response = await fetch(
-        'http://localhost:3000/api/insertPrinter',
+        `${process.env.NEXT_PUBLIC_HOST_URL}/api/insertPrinter`,
         options
       );
       if (response.ok) {
@@ -607,7 +607,7 @@ export const insertCategory = async (authToken: string,id:string,name:string) =>
    console.log(options)
     try {
       const response = await fetch(
-        'http://localhost:3000/api/insertOrder',
+        `${process.env.NEXT_PUBLIC_HOST_URL}/api/insertOrder`,
         options
       );
       if (response.ok) {
@@ -641,7 +641,7 @@ export const insertCategory = async (authToken: string,id:string,name:string) =>
    console.log(options)
     try {
       const response = await fetch(
-        'http://localhost:3000/api/insertOrder',
+        `${process.env.NEXT_PUBLIC_HOST_URL}/api/insertOrder`,
         options
       );
       if (response.ok) {

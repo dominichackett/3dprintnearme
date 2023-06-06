@@ -130,7 +130,7 @@ export default function Product() {
   const [open, setOpen] = useState(false)
   const [selectedColor, setSelectedColor] = useState(product.colors[0])
   const [selectedFile, setSelectedFile] = useState()
-  const [preview, setPreview] = useState()
+  const [preview, setPreview] = useState('')
   const onSelectFile = (e) => {
     if (!e.target.files || e.target.files.length === 0) {
         setSelectedFile(undefined)
@@ -144,7 +144,7 @@ export default function Product() {
    // create a preview as a side effect, whenever selected file is changed
  useEffect(() => {
     if (!selectedFile) {
-        setPreview(undefined)
+        setPreview('')
         return
     }
   

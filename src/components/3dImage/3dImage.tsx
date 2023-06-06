@@ -96,7 +96,7 @@ const close = async () => {
         })
         .catch(error => console.log(error));
       }
-    },[])
+    },[props])
 
     useEffect(() => {
      
@@ -166,7 +166,7 @@ const close = async () => {
           worker.current.terminate();
       };
     }
-    },[typeof window !== 'undefined']);
+    },[typeof window !== 'undefined',props]);
   
 
     const onSelectFile = (e) => {

@@ -152,8 +152,8 @@ const close = async () => {
 
       if (error.code === 'TRANSACTION_REVERTED') {
         console.log('Transaction reverted');
-        let revertReason = ethers.utils.parseRevertReason(error.data);
-        setNotificationDescription(revertReason);
+       // let revertReason = ethers.utils.parseRevertReason(error.data);
+        setNotificationDescription("Trasnaction Reverted without");
       }  else if (error.code === 'ACTION_REJECTED') {
       setNotificationDescription('Transaction rejected by user');
     }else {

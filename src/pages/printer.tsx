@@ -12,7 +12,7 @@ import { TokenContext } from '../components/Context/spacetime';
 import { queryPrinter,insertPrinter,updatePrinter} from '../components/utils/utils';
 import Notification from '@/components/Notification/Notification'
 import { v4 as uuidv4 } from 'uuid';
-import ethers from 'ethers'
+import {ethers} from 'ethers'
 import { PrintObjectAddress,PrintObjectABI } from '@/components/Contracts/contracts';
 
 // Initialize the package with the desired locale (e.g., 'en')

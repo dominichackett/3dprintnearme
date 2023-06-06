@@ -5,7 +5,9 @@ import { useAccount, useNetwork ,useSigner} from 'wagmi';
 import Notification from '@/components/Notification/Notification'
 import { Web3Storage, File } from "web3.storage";
 import { NFTStorage } from "nft.storage";
-
+function classNames(...classes) {
+  return classes.filter(Boolean).join(' ')
+}
 const style = {
   top: 70,
   left: 0,
@@ -23,7 +25,8 @@ const tabs = [
   export interface ImagePanelRef {
     setOptions: (options:any) => void;
     }
-
+  
+    
 const ImagePanel=React.forwardRef<ImagePanelRef>((props:any,ref:any)=> {
 
     const fileInputRefGCODE = useRef(null);

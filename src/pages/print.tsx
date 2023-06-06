@@ -7,7 +7,7 @@ import { HeartIcon, MinusIcon, PlusIcon ,XMarkIcon} from '@heroicons/react/24/ou
 import { ChevronDownIcon } from '@heroicons/react/20/solid'
 import Header from '@/components/Header/Header'
 import Footer from '@/components/Footer/Footer'
-import ImagePanel ,{ ImagePanelRef } from '@/components/3dImage/3dimage'
+import ImagePanel ,{ ImagePanelRef } from '@/components/3dImage/3dImage'
 import {PrinterSearchRef} from '@/components/PrinterSearch/PrinterSearch'
 import PrinterSearch from '@/components/PrinterSearch/PrinterSearch'
 

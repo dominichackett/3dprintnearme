@@ -39,7 +39,7 @@ const materials = [
 
 
 
-export default function ViewItem() {
+export default function Printer() {
 
   const [open, setOpen] = useState(false)
   const [filamentPrice,setFilamentPrice] = useState(0)

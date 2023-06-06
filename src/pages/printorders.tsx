@@ -26,7 +26,7 @@ import { format } from 'date-fns';
 
 
 
-export default function Product() {
+export default function PrintOrder() {
   const [open, setOpen] = useState(false)
   const [orders,setOrders] = useState([])
   const [refreshData,setRefreshData] = useState(new Date())

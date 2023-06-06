@@ -126,7 +126,7 @@ const navigation = {
 
 
 
-export default function Product() {
+export default function Profile() {
   const [open, setOpen] = useState(false)
   const [selectedColor, setSelectedColor] = useState(product.colors[0])
   const [selectedFile, setSelectedFile] = useState()

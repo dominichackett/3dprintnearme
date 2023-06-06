@@ -23,7 +23,7 @@ import { format } from 'date-fns';
 
 
 
-export default function Product() {
+export default function MyOrders() {
   const [open, setOpen] = useState(false)
   const [orders,setOrders] = useState([])
 

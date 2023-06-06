@@ -31,7 +31,7 @@ const materials = [
 
 
 
-export default function Product() {
+export default function AddProduct() {
   const [categories,setCategories] = useState([])
   const [open, setOpen] = useState(false)
   const [selectedFile, setSelectedFile] = useState()

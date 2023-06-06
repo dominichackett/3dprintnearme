@@ -98,7 +98,7 @@ const navigation = {
   ]
 
 
-export default function MaketPlace() {
+export default function Print() {
     const [open, setOpen] = useState(false)
     const [filamentPrice,setFilamentPrice] = useState(0.05)
     const [hourlyPrice,setHourlyPrice] = useState(1)

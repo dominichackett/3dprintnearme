@@ -28,7 +28,7 @@ export default function Product() {
   const [orders,setOrders] = useState([])
 
   const [selectedFile, setSelectedFile] = useState()
-  const [preview, setPreview] = useState()
+  const [preview, setPreview] = useState('')
   const { data: signer} = useSigner()
   const { accessToken } = useContext(TokenContext);
   const router = useRouter();

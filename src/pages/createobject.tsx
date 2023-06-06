@@ -35,7 +35,7 @@ export default function CreateObject() {
   const [categories,setCategories] = useState([])
   const [open, setOpen] = useState(false)
   const [selectedFile, setSelectedFile] = useState()
-  const [preview, setPreview] = useState()
+  const [preview, setPreview] = useState('')
   const [filename,setFilename] = useState()
   const imagePanelRef = useRef<ImagePanelRef>(null)
   const { accessToken } = useContext(TokenContext);

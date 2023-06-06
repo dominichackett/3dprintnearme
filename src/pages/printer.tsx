@@ -4,8 +4,8 @@ import { Dialog, Transition,Menu } from '@headlessui/react'
 import isoCountries from 'i18n-iso-countries';
 
 import { XMarkIcon } from '@heroicons/react/20/solid'
-import Header from '../components/Header/header'
-import Footer from '@/components/Footer/footer'
+import Header from '../components/Header/Header'
+import Footer from '@/components/Footer/Footer'
 import { useSigner  } from 'wagmi'
 
 import { TokenContext } from '../components/Context/spacetime';

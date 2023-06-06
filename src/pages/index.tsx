@@ -1,6 +1,6 @@
 import Head from 'next/head'
-import Header from '@/components/Header/header'
-import Footer from '@/components/Footer/footer'
+import Header from '@/components/Header/Header'
+import Footer from '@/components/Footer/Footer'
 import Link from 'next/link'
 export default function Home() {
   return (

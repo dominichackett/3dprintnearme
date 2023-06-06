@@ -24,9 +24,7 @@ const materials = [
  
   ]
 
-  function classNames(...classes) {
-    return classes.filter(Boolean).join(' ')
-  }
+ 
   
 
 
@@ -286,7 +284,7 @@ const close = async () => {
                 >
                                       <option value={-1}>Select Material</option>    
 
-                  {materials.map((material,index) => (<option value={index}>{material.name}</option>))}
+                  {materials.map((material,index) => (<option key={material.name} value={index}>{material.name}</option>))}
                 </select>
               </div>
             </div> 

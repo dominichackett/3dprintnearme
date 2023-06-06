@@ -322,4 +322,6 @@ const PrinterSearch=React.forwardRef<PrinterSearchRef>((props:any,ref:any)=> {
   ) 
 }
 })
+PrinterSearch.displayName = 'PrinterSearch';
+
 export default PrinterSearch

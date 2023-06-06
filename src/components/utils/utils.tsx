@@ -330,13 +330,13 @@ export const insertCategory = async (authToken: string,id:string,name:string) =>
     }
   };
 
-  export const insertOrder = async (authToken: string,id:string,dateplaced:string,owner:string,printer:string,status:number,tokenid:number,category:string) => {
+  export const insertOrder = async (authToken: string,id:string,dateplaced:string,owner:string,printer:string,status:number,tokenid:number,item:string,filamentcost:number, hourlycost:number,notes:string) => {
     const options = {
      method:'Post',
       body: JSON.stringify({
         sqlText:
-          `INSERT into PRINTNEARME.ORDERS (ID,DATEPLACED,OWNER,PRINTER,STATUS,TOKENID,CATEGORY) 
-          VALUES('${id}','${dateplaced}','${owner}','${printer}',${status},${tokenid},'${category}')`,
+          `INSERT into PRINTNEARME.ORDERS (ID,DATEPLACED,OWNER,PRINTER,STATUS,TOKENID,ITEM,FILAMENTCOST,HOURLYCOST,NOTES) 
+          VALUES('${id}','${dateplaced}','${owner}','${printer}',${status},${tokenid},'${item}',${filamentcost},${hourlycost},'${notes}')`,
         resourceId: 'PRINTNEARME.ORDERS',
       
      
@@ -377,7 +377,7 @@ export const insertCategory = async (authToken: string,id:string,name:string) =>
       },
       body: JSON.stringify({
         sqlText:
-          `SELECT * FROM PRINTNEARME.ORDERS ORDER BY DATEPLACED DESC where PRINTER=${printer}`,
+          `SELECT * FROM PRINTNEARME.ORDERS where PRINTER='${printer}'  ORDER BY DATEPLACED DESC`,
         resourceId: 'PRINTNEARME.ORDERS',
       }),
     };
@@ -413,7 +413,7 @@ export const insertCategory = async (authToken: string,id:string,name:string) =>
       },
       body: JSON.stringify({
         sqlText:
-          `SELECT * FROM PRINTNEARME.ORDERS ORDER BY DATEPLACED DESC where OWNER=${owner}}`,
+          `SELECT * FROM PRINTNEARME.ORDERS  where OWNER='${owner}' ORDER BY DATEPLACED DESC`,
         resourceId: 'PRINTNEARME.ORDERS',
       }),
     };
@@ -582,6 +582,74 @@ export const insertCategory = async (authToken: string,id:string,name:string) =>
         console.log(data)
         return data;
       } else {
+        throw new Error('Request failed');
+      }
+    } catch (error) {
+      console.error(error);
+      throw error;
+    }
+  };
+
+
+  export const updateOrder = async (authToken: string,id:string,item:string) => {
+  
+    const options = {
+     method:'Post',
+      body: JSON.stringify({
+        sqlText:
+          `update PRINTNEARME.ORDERS set item='${item}' where ID='${id}'`,
+        resourceId: 'PRINTNEARME.ORDERS',
+      
+     
+        authorization: `Bearer ${authToken}`,
+             }),
+    };
+   console.log(options)
+    try {
+      const response = await fetch(
+        'http://localhost:3000/api/insertOrder',
+        options
+      );
+      if (response.ok) {
+        const data = await response.json();
+        console.log(data)
+        return data;
+      } else {
+        console.log(response)
+        throw new Error('Request failed');
+      }
+    } catch (error) {
+      console.error(error);
+      throw error;
+    }
+  };
+
+
+  export const updateOrderStatus= async (authToken: string,id:string,status:number) => {
+  
+    const options = {
+     method:'Post',
+      body: JSON.stringify({
+        sqlText:
+          `update PRINTNEARME.ORDERS set STATUS=${status} where ID='${id}'`,
+        resourceId: 'PRINTNEARME.ORDERS',
+      
+     
+        authorization: `Bearer ${authToken}`,
+             }),
+    };
+   console.log(options)
+    try {
+      const response = await fetch(
+        'http://localhost:3000/api/insertOrder',
+        options
+      );
+      if (response.ok) {
+        const data = await response.json();
+        console.log(data)
+        return data;
+      } else {
+        console.log(response)
         throw new Error('Request failed');
       }
     } catch (error) {

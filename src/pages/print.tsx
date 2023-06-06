@@ -81,10 +81,7 @@ const navigation = {
 
 
 
-  function classNames(...classes) {
-    return classes.filter(Boolean).join(' ')
-  }
-  
+
 
 
 
@@ -110,6 +107,10 @@ export default function MaketPlace() {
     const [filename,setFilename] = useState()
     const imagePanelRef = useRef<ImagePanelRef>(null)
     const printerSearchRef = useRef<PrinterSearchRef>(null)
+    function classNames(...classes: string[]) {
+      return classes.filter(Boolean).join(' ')
+    }
+    
     const materialChanged = (event) => {
         console.log(imagePanelRef.current)
         if(imagePanelRef.current)
@@ -264,7 +265,7 @@ export default function MaketPlace() {
                   className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:max-w-xs sm:text-sm sm:leading-6"
                 >
                   <option value={-1}>Select Material</option>    
-                  {materials.map((material,index) => (<option value={index}>{material.name}</option>))}
+                  {materials.map((material,index) => (<option key={material.name} value={index}>{material.name}</option>))}
                 </select>
               </div>
             </div> 

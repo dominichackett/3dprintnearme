@@ -19,10 +19,7 @@ const tabs = [
 
   
 ]
-function classNames(...classes) {
-    return classes.filter(Boolean).join(' ')
-  }
-  
+
   export interface ImagePanelRef {
     setOptions: (options:any) => void;
     }
@@ -326,7 +323,7 @@ const close = async () => {
         <div className="mb-4 hidden sm:block">
         <nav className="-mb-px flex" aria-label="Tabs">
             {tabs.map((tab) => (
-              <button
+              <button key={tab.name}
                 onClick={()=> setSelectedTab(tab.name)}
 
 
@@ -450,5 +447,6 @@ const close = async () => {
       />
   </>)
 })
+ImagePanel.displayName = 'ImagePanel';
 
 export default ImagePanel;

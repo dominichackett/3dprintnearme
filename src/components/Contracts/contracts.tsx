@@ -2301,7 +2301,7 @@ export const tokenContractAbi = [
 ]
 
 
-export const PrintObjectAddress = '0x5Cd177ED6204C21bEaBC56B64033E8E33A1cA8bd'
+export const PrintObjectAddress = '0xcEc14223d07037e1fe579B0Cf7dF1263fFc89372'
 export const PrintObjectABI =[
 	{
 		"inputs": [

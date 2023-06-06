@@ -132,12 +132,13 @@ useEffect(()=>{
         
          }catch(error)
          {
-
+            console.log(error)
          }  
      }
      if(accessToken && signer)
      getMyListings()
    console.log(accessToken)
+    console.log(signer)
 },[accessToken,refreshData,signer])
 
 const listToken = async (tokenid:string,price:any,_category:string)=>{
@@ -325,7 +326,7 @@ const  list = (tokenid:string,name:string,_category:string)=>{
                       <img 
                         src={object.image}
                         alt={"Image"}
-                        className="h-full w-full object-cover object-center group-hover:opacity-75"
+                        className="h-[300px] w-full object-cover object-center group-hover:opacity-75"
                       />
                     </div>
                     <div className="mt-2 flex items-center justify-between text-base font-medium text-white">

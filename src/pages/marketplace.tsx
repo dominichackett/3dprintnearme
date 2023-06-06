@@ -321,7 +321,7 @@ const viewItem = async(item:any)=>{
                       <img
                         src={product.image}
                         alt={product.name}
-                        className="h-full w-full object-cover object-center group-hover:opacity-75"
+                        className="h-[300px]  w-full object-cover object-center group-hover:opacity-75"
                       />
                     </div>
                     </button>

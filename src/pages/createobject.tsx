@@ -4,7 +4,7 @@ import { Dialog, Tab, Transition } from '@headlessui/react'
 import { XMarkIcon} from '@heroicons/react/24/outline'
 import Header from '@/components/Header/Header'
 import Footer from '@/components/Footer/Footer'
-import ImagePanel ,{ ImagePanelRef }  from '@/components/3dImage/3dimage'
+import ImagePanel ,{ ImagePanelRef }  from '@/components/3dImage/3dImage'
 import { queryCategory} from '../components/utils/utils';
 import { TokenContext } from '../components/Context/spacetime';
 import Notification from '@/components/Notification/Notification'

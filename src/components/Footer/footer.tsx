@@ -1,3 +1,4 @@
+//Changed footer to Footer
 import { useState } from 'react'
 import Logo from '../Header/logo'
 

@@ -20,8 +20,10 @@ const TokenProvider = ({ children }: { children: React.ReactNode }) => {
     try {
       // Perform the refresh token request to obtain a new access token
 
-
-      const response =  await fetch(`${process.env.NEXT_PUBLIC_HOST_URL}/api/refreshToken`)
+      const options = {method: 'POST', headers: {accept: '*/*'},
+      body:JSON.stringify({ refreshToken:refreshToken,accessToken:accessToken})};
+console.log(JSON.stringify({ refreshToken:refreshToken,accessToken:accessToken}))
+      const response =  await fetch(`${process.env.NEXT_PUBLIC_HOST_URL}/api/refreshToken`,options)
 
       console.log(response)
       if (response.ok) {

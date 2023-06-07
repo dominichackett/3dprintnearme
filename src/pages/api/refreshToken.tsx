@@ -1,5 +1,8 @@
 export default function handler(req, res) {
-    const options = {method: 'POST', headers: {accept: '*/*'}};
+  const body = JSON.parse(req.body)
+ 
+  const options = {method: 'POST', headers: {accept: '*/*',   authorization: `Bearer ${body.refreshToken}`},
+  body:JSON.stringify(body.refreshToken)};
 
 
   
@@ -10,7 +13,7 @@ export default function handler(req, res) {
       })
       .catch((err) => {
         console.error(err);
-        res.status(500).json({ error: 'Internal Server Error' });
+        res.status(500).json(err);
       });
   }
   

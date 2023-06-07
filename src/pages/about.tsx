@@ -53,7 +53,7 @@ export default function Home() {
                   Market Place
                 </Link>
                 <Link
-                  href="/about"
+                  href="create-item.html"
                   className="mb-5 inline-flex items-center justify-center rounded-md border-2 border-white py-3 px-7 text-base font-semibold text-white transition-all hover:border-primary hover:bg-primary"
                 >
                   About

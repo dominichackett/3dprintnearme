@@ -8,9 +8,9 @@ import Footer from '@/components/Footer/Footer'
 import { TokenContext } from '../components/Context/spacetime';
 import { useSigner  } from 'wagmi'
 import { queryMarketPlace } from '@/components/utils/utils'
-import { PNMTADDRESS,PNMTABI,PATADDRESS,exchangeAddress,exchangeABI } from '@/components/Contracts/contracts'
+import { PNMTADDRESS,PNMTABI,PATADDRESS,exchangeAddress,exchangeABI ,InflationABI,InflationAddress} from '@/components/Contracts/contracts'
 import { useRouter } from "next/router";
-
+import { ethers } from 'ethers' 
 
 
 
@@ -49,11 +49,12 @@ const sortOptions = [
 export default function MaketPlace() {
   const [open,setOpen] = useState(false)
   const { accessToken } = useContext(TokenContext);
-  const { data: signer} = useSigner()
   const [marketPlaceItems,setMarketPlaceItems] = useState([])
   const [listedPrice,setListedPrice] = useState(new Map())
   const router = useRouter();
-
+  const { data: signer} = useSigner()
+  const [inflateRate,setInflationRate] = useState(1)
+  const [gotInflation,setGotInflation] = useState(false)
   const [gotListedPrice,setGotListedPrice] = useState(false)
   const [refreshData,setRefreshData] = useState(new Date())
 
@@ -77,7 +78,7 @@ export default function MaketPlace() {
        for(const index in ownedNfts)
        {
          
-         if((ownedNfts[index].contract.address == PATADDRESS || ownedNfts[index].contract.address ==PNMTADDRESS) && ownedNfts[index].tokenUri !=null) 
+         if((ownedNfts[index].contract.address == PATADDRESS || ownedNfts[index].contract.address ==PNMTADDRESS) && ownedNfts[index].tokenUri !=null && parseInt(ownedNfts[index].tokenId )>8) 
          {
             const options = {method: 'GET', headers: {accept: 'application/json'}};
  
@@ -112,7 +113,8 @@ export default function MaketPlace() {
         let _listed = new Map()
         for(const index in results)
         {
-           _listed.set(results[index].ITEMID ,results[index].PRICE)   
+           
+          _listed.set(results[index].ITEMID ,results[index].PRICE*inflateRate)   
         }
         
         setGotListedPrice(true)
@@ -123,11 +125,36 @@ export default function MaketPlace() {
 
        }  
    }
-   if(accessToken)
+   if(accessToken && gotInflation)
    getListings()
  console.log(accessToken)
-},[accessToken,refreshData])
+},[accessToken,refreshData,gotInflation])
 
+useEffect(()=>{
+  async function getInflation()
+  {
+    const inFlationContract = new ethers.Contract(
+      InflationAddress,
+      InflationABI,
+      signer
+    );
+   
+       try{
+       const _inflationRate = await inFlationContract.inflationWei()
+       const rate = ethers.utils.formatEther(_inflationRate)
+       console.log(parseFloat(rate).toFixed(2))
+       setInflationRate(parseFloat(((parseFloat(rate)/100)+1).toFixed(2)))
+       setGotInflation(true)
+       }catch(err)
+       {
+
+       }
+     
+  }
+
+  if(signer)
+    getInflation()
+},[signer])
 
 const viewItem = async(item:any)=>{
   item["price"] = listedPrice.get(parseInt(item.tokenId))

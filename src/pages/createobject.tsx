@@ -111,7 +111,9 @@ const close = async () => {
 
   
   const createProduct = async ( ) =>{
+     
     const {name,price,material,category,about} = getObjectData()
+     
     if(name == "" || price == "" || material== "Select Material" || category  == "Select a Category" ||about == "") 
     {
       setDialogType(2) //Error

@@ -81,7 +81,7 @@ useEffect(()=>{
            console.log(metadata)
            _myobjects.push({address:ownedNfts[index].contract.address,contractName:ownedNfts[index].contract.name,symbol:ownedNfts[index].contract.symbol,
             image:ownedNfts[index].image.cachedUrl,name:ownedNfts[index].name,description:ownedNfts[index].description
-            ,tokenId:ownedNfts[index].tokenId,category:metadata.categor,gcode:metadata?.gcode,material:metadata.materialy})
+            ,tokenId:ownedNfts[index].tokenId,category:metadata.category,gcode:metadata?.gcode,material:metadata.material})
 
 
        }else if(ownedNfts[index].contract.address == PATADDRESS )

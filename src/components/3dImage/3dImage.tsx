@@ -268,6 +268,7 @@ const close = async () => {
 
      
     const {name,material,category,about} = props.getObjectData()
+    alert(`${material} ${category}`)
     if(name == "" || material== "Select Material" || category  == "Select a Category" ||about == "")
     {
       setDialogType(2) //Error

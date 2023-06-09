@@ -132,55 +132,49 @@ const close = async () => {
     setPrintCost((_printTime*hourlyPrice))
      setFilamentCost((_filament*filamentPrice))
   }
-const printItem = async()=>
-{
 
-  
-   if(printer == null)
-   {
-    setDialogType(2) //Error
-    setNotificationTitle("Print")
-    setNotificationDescription("Printer data not found.")
-    setShow(true)
-    return 
-  }
-          
+const printItem = async()=>{
+ 
+  const apiKey = printer.URL.substring(printer.URL.lastIndexOf('/') + 1);
+  const filename = gcodeFile.substring(gcodeFile.lastIndexOf('/') + 1);
 
-         const apiKey = printer.URL.substring(printer.URL.lastIndexOf('/') + 1);
-         const filename = gcodeFile.substring(gcodeFile.lastIndexOf('/') + 1);
+  const printerURL= printer.URL.replace(apiKey,"")
+  const response = await fetch(gcodeFile);
+  if (response.ok) {
+    const text = await response.text();
 
-         const printerURL= printer.URL.replace(apiKey,"")
+    const formData = new FormData();
+    formData.append('file', new Blob([text], { type: 'text/plain' }), filename);
+    formData.append('select', 'true');
+    formData.append('print', 'true');
+     console.log(filename)
+    let response1;
+    try {
+      response1 = await fetch(`${printerURL}api/files/local`, {
+        method: 'POST',
+        body: formData
+        , headers: {
+          'X-Api-Key': apiKey,
+        }});
 
-         const options = {
-          method:'Post',
-           body: JSON.stringify({apiKey:apiKey,filename:filename,printerURL:printerURL,gcodeURL:gcodeFile})
-         };
-
-         try
-         {const response = await fetch(`${process.env.NEXT_PUBLIC_HOST_URL}/api/print,options`)
-         console.log(response)
-
-        if(response.ok) 
-        {   
-           setDialogType(1) //Success
-           setNotificationTitle("Print")
-           setNotificationDescription("Print job started.")
-           setShow(true)
-        }else
-        {
-          const _error = await response.json()
-          setDialogType(2) //Error
-          setNotificationTitle("Print")
-          setNotificationDescription(`Error printing job.  ${_error.error}` )
-          setShow(true)  
-        }
-        }catch(error)
-        {
-          console.log(error)
-        }
-   
+        setDialogType(1) //Success
+        setNotificationTitle("Print")
+        setNotificationDescription("Print job started.")
+        setShow(true)
+    } catch (error) {
+      setDialogType(2) //Error
+      setNotificationTitle("Print")
+      setNotificationDescription(`Error printing job.  ${_error.error}` )
+      setShow(true)  
+    }
 
 }
+
+
+}
+
+
+
   return (
     <div className="bg-black">
       {/* Mobile menu */}

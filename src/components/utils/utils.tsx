@@ -493,7 +493,7 @@ export const insertCategory = async (authToken: string,id:string,name:string) =>
         console.log(data)
         return data;
       } else {
-        console.log(response)
+        console.log(response.body)
         throw new Error(response.json());
       }
     } catch (error) {

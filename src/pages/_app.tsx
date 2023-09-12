@@ -59,11 +59,30 @@ const zkEVM :Chain = {
     testnet: true,
   };
     
-
+  const calibration :Chain = {
+    id:314159 ,
+    name:"Filecoin Calibration Testnet",
+    nativeCurrency: {
+      decimals: 18,
+      name: 'FILECOIN',
+      symbol: 'TFIL',
+    },
+    rpcUrls: {
+      default: {
+        http: ['https://rpc.ankr.com/filecoin_testnet']
+      },
+      public: {
+        http: ['https://rpc.ankr.com/filecoin_testnet']
+      },
+    },
+   
+    testnet: true,
+  };
+    
 // Configure chains & providers
 // Two popular providers are Alchemy (alchemy.com) and Infura (infura.io)
 const { chains, provider } = configureChains(
-  [polygonMumbai],
+  [calibration],
   [publicProvider()],
 )
 
@@ -85,7 +104,7 @@ const client = createClient({
 })
 
 export default function App({ Component, pageProps }: AppProps) {
-  return   <WagmiConfig client={client}><TokenProvider> 
+  return   <WagmiConfig client={client}>
         <SessionProvider refetchInterval={0} session={pageProps.session}>
   
     <RainbowKitSiweNextAuthProvider
@@ -94,5 +113,5 @@ export default function App({ Component, pageProps }: AppProps) {
           <RainbowKitProvider chains={chains} theme={darkTheme()}>
 
   <Component {...pageProps} /></RainbowKitProvider></RainbowKitSiweNextAuthProvider>
-  </SessionProvider></TokenProvider></WagmiConfig>
+  </SessionProvider></WagmiConfig>
 }

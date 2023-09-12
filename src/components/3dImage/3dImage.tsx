@@ -1,10 +1,14 @@
 import React from 'react';
-import {  useState,useEffect,useRef ,useImperativeHandle} from 'react'
+import { useCallback, useState,useEffect,useRef ,useImperativeHandle} from 'react'
 import {GCodeViewer} from "react-gcode-viewer";
 import { useAccount, useNetwork ,useSigner} from 'wagmi';
 import Notification from '@/components/Notification/Notification'
 import { Web3Storage, File } from "web3.storage";
 import { NFTStorage } from "nft.storage";
+import lighthouse from '@lighthouse-web3/sdk'
+import { useDropzone } from 'react-dropzone';
+import { Database } from "@tableland/sdk";
+import { createPrinterTable,createCategoryTable,createMarketPlaceTable,createOrderTable } from '@/tableland/tableland';
 function classNames(...classes) {
   return classes.filter(Boolean).join(' ')
 }
@@ -29,10 +33,78 @@ const tabs = [
     
 const ImagePanel=React.forwardRef<ImagePanelRef>((props:any,ref:any)=> {
 
+
+  
+      const onDrop = useCallback(acceptedFiles =>{
+        console.log(acceptedFiles)
+      //  setSelectedGCODEFiles(acceptedFiles)
+        let files = []
+        const foldersSet = new Set();
+        const dirSet = new Set()
+        const groupedFiles = {};
+
+        for(const index in acceptedFiles)
+        {
+            files.push(acceptedFiles[index])
+            const filePath = acceptedFiles[index].path; // Assuming each file object has a 'path' property
+
+            // Split the file path into an array of directories
+            const directories = filePath.split('/'); // You may need to adjust the separator based on your platform
+            console.log(directories)
+            // Extract the folders (all except the last element, which is the file name)
+            if (directories.length > 1) {
+              dirSet.add(directories[1])
+              const folderPath = directories.slice(0, -1).join('/');
+              foldersSet.add(folderPath);
+
+           // Create an array for the folder if it doesn't exist in groupedFiles
+           if (!groupedFiles[folderPath]) {
+             groupedFiles[(folderPath) ] = [];
+            }
+
+           // Push the file object to the folder's array
+          groupedFiles[folderPath].push(acceptedFiles[index]);
+
+            }
+            
+        }
+
+
+        const rootDirect = Array.from(dirSet)
+        console.log(rootDirect)
+            // Convert the Set back to an array
+  let uniqueFolders = Array.from(foldersSet);
+        if(rootDirect.length > 1 || uniqueFolders.length == 0 || acceptedFiles.length == 0 )
+        {
+           setNotificationTitle("Select Files")
+           setNotificationDescription("Please select a single folder with your files")
+           setDialogType(2) //Error
+           setShow(true)
+           return
+        }
+    
+
+  
+        setGcode(files)
+        console.log(groupedFiles)
+        setFolders(uniqueFolders)
+        setSelectedGCODEFiles(groupedFiles)
+        setGcodeFiles(acceptedFiles)
+       
+      },[])
+
+    const [db,setDb] = useState()
+    const [uploadPercentage,setUploadPercentage] = useState(0)  
+    const {getRootProps,getInputProps,isDragActive}  = useDropzone({onDrop})
+    const [folders,setFolders] = useState([])
+    const [selectedFileTab,setSelectedFileTab] = useState(null)    
+    const [gcodeFiles,setGcodeFiles] = useState([])
     const fileInputRefGCODE = useRef(null);
-    const [gcode, setGcode] = useState(null);
+    const [gcode, setGcode] = useState([]);
     const [selectedTab,setSelectedTab] = useState('Image')
-    const [selectedGCODEFile, setSelectedGCODEFile] = useState()
+    const [selectedGCODEFiles, setSelectedGCODEFiles] = useState({})
+    const [selectedGCODEFile, setSelectedGCODEFile] = useState(null)
+    
     const [previewGCODE, setPreviewGCODE] = useState()
     const filename = useRef()
     const [open, setOpen] = useState(false)
@@ -74,101 +146,9 @@ const close = async () => {
     setOptions
   }));
 
-    useEffect(()=>{
-      console.log(props)
-      if(props.id){
-        setPreviewGCODE(props.gcode)
-        fetch(props.gcode)
-        .then(response => response.text())
-        .then(data =>{
-          
-          setGcode(data)
-          worker.current.postMessage({
-            "cmd":"loadFile",
-            "msg":{
-                gcode:data,
-                options: {
-                    firstReport: 5
-                }
-            }
-        }
-    ); 
-        })
-        .catch(error => console.log(error));
-      }
-    },[])
-
-    useEffect(() => {
-     
-      if (typeof window !== 'undefined' && window.Worker) {
-
-         worker.current = new Worker('/Worker/worker.js');
-     // worker.current.postMessage('start');
-      worker.current.onerror = (error) => {
-        // Handle errors from the worker
-        console.log(error);
-      };
-      worker.current.onmessage = (event) => {
-        var data = event.data;
-        console.log("Peace")
-      //  console.log(event)
-        // for some reason firefox doesn't garbage collect when something inside closures is deleted, so we delete and recreate whole object eaech time
-        switch (data.cmd) {
-          case 'loadFile':
-                console.log("load File");
-                break;
-             
-          case 'analyzeModel':
-                console.log(data.msg);
-                worker.current.postMessage({
-                  "cmd": "analyzeModel",
-                  "msg": {
-  //                    model: model
-                  }
-              })
 
 
-                break;
-           
-                case 'analyzeDone':
-                  console.log(data.msg);
-                  worker.current.postMessage({
-                    "cmd": "returnModel",
-                    "msg": {
-    //                    model: model
-                    }
-                })
-
-                case 'returnData':
-                  console.log(data.msg)
-                  console.log("returned");
-                  setLayerCount(data.msg.layerCnt)
-                  setHeight(data.msg.layerHeight.toFixed(2))
-                  setFilament(data.msg.totalFilament.toFixed(2))
-                  setWeight(parseFloat(data.msg.totalWeight).toFixed(2))
-                  setPrintTime((data.msg.printTime/3600).toFixed(2))
-                  setSize(`${data.msg.modelSize.x.toFixed(2)} x ${data.msg.modelSize.y.toFixed(2)} x ${data.msg.modelSize.z.toFixed(2)}mm  `)
-                  props.setPrintData(parseFloat(data.msg.totalWeight).toFixed(2),(data.msg.printTime/3600).toFixed(2),filename.current)
-                  break;
-            default:
-                self.postMessage('Unknown command: ' + data.msg, null);
-        }
-    
-  
-      };
-      console.log(worker)
-
-    }
-
-      return () => {
-
-        if (worker.current) {
-          worker.current.terminate();
-      };
-    }
-    },[typeof window !== 'undefined']);
-  
-
+   
     const onSelectFile = (e) => {
       if (!e.target.files || e.target.files.length === 0) {
           setSelectedFile(undefined)
@@ -187,8 +167,9 @@ const close = async () => {
             setSelectedGCODEFile(undefined)
             return
         }
-      
-        const file = e.target.files[0];
+
+
+        /*  const file = e.target.files[0];
         const reader = new FileReader();
         console.log(worker)
         filename.current = file.name
@@ -214,8 +195,15 @@ const close = async () => {
           setGcode(event.target.result);
         };
         reader.readAsText(file);
-
+*/
       }
+
+
+
+    useEffect(()=>{
+      if(signer) 
+        setDb(new Database({signer}))  
+    },[signer])  
   
      // create a preview as a side effect, whenever selected file is changed
    useEffect(() => {
@@ -252,7 +240,30 @@ const close = async () => {
 
       
     
-    
+    const gcodeClicked = async (item:any,index:any) =>{
+      console.log(selectedGCODEFiles[item][index])
+
+     // if(selectedGCODEFiles[item][index].length >0)
+      setSelectedGCODEFile(selectedGCODEFiles[item][index])
+       
+    }
+
+    const progressCallback = (progressData) => {
+      let percentageDone =
+        100 - (progressData?.total / progressData?.uploaded)?.toFixed(2);
+      setUploadPercentage(percentageDone);
+    };
+
+
+    const createTables = async()=>{
+      if(!db)
+      return 
+
+      //await createPrinterTable(db)
+     await createOrderTable(db)
+      await createMarketPlaceTable(db)
+      //await createCategoryTable(db)
+    }
     const saveObject = async ()=> {
 
       console.log(selectedGCODEFile)
@@ -268,7 +279,7 @@ const close = async () => {
 
      
     const {name,material,category,about} = props.getObjectData()
-    if(name == "" || material== "Select Material" || category  == "Select a Category" ||about == "")
+/*    if(name == "" || material== "Select Material" || category  == "Select a Category" ||about == "")
     {
       setDialogType(2) //Error
       setNotificationTitle("Save File")
@@ -276,16 +287,33 @@ const close = async () => {
       setShow(true)
       return
     }
-
+*/
       try {
 
         setDialogType(3) //Info
         setNotificationTitle("File Uploading")
-        setNotificationDescription("Uploading Files.")
+        setNotificationDescription(`Uploading Files ${uploadPercentage}%`)
         setShow(true)  
       //Upload file to web3.storage
-    const cid = await storage.put([new File([selectedGCODEFile],filename.current)]);
-    console.log(cid)
+   // const cid = await storage.put([new File([selectedGCODEFile],filename.current)]);
+  console.log(gcodeFiles.length)
+  //gcodeFiles[0].webkitRelativePath ="/myfiles"
+  console.log(gcodeFiles)
+  
+  
+   const uploadResponse = await lighthouse.upload(
+    gcodeFiles, 
+    process.env.NEXT_PUBLIC_LIGHTHOUSE_API_KEY,
+    (gcodeFiles.length > 1 ? true:false),
+    null,
+    progressCallback
+  );
+  console.log(uploadResponse)
+  const cid = uploadResponse.data.Hash
+   
+   console.log(cid)
+   setShow(false)
+  return 
  const objectData = {name: name, description:about,image:selectedFile ,gcode:`https://${cid}.ipfs.w3s.link/${filename.current}`,material:material,category:category,weight:weight,size:size,filament:filament,layercount:layerCount,printtime:printTime }
  const metadata = await nftstorage.store(objectData) 
  console.log(metadata.url)
@@ -351,12 +379,16 @@ const close = async () => {
       className="sr-only"
       onChange={onSelectGCODEFile}
       ref={fileInputRefGCODE}
+       multiple 
 
     />
     <div
       for="file"
-      className="cursor-pointer relative flex h-[480px] items-center justify-center rounded-lg border border-dashed border-[#A1A0AE] bg-[#353444] p-12 text-center"
-    >
+      className="mb-5 cursor-pointer relative flex h-[480px] items-center justify-center rounded-lg border border-dashed border-[#A1A0AE] bg-[#353444] p-12 text-center"
+      {...getRootProps()}>
+
+           {isDragActive ? (gcode.length == 0 && <p className='text-white '>Drop the files here</p>): (gcode.length == 0 && <p className='text-white'>Drag and drop some files here, or click to select files</p>)}
+
       {previewGCODE &&  <GCodeViewer
               orbitControls
               showAxes={true}
@@ -371,13 +403,22 @@ const close = async () => {
 
           />}
     </div>
+    {folders.map((item:any,index:any)=>(
+                 <div>
+                  <div key={index} className='mt-5 cursor-pointer' onClick={()=> setSelectedFileTab(item)}>
+                  <div
+                    className="text-white rounded-md bg-[#4E4C64] py-4 px-8  flex justify-between"
+                  ><span>{item}</span> <span>Files: {selectedGCODEFiles[item].length}</span></div></div>
+                  {selectedFileTab == item && <div key={index} className='cursor-pointer rounded-md py-4 px-8 border border-dashed border-[#A1A0AE] bg-[#353444]' >
+                  {selectedGCODEFiles[item].map((file:any,_index:any)=>(<div
+                    className="text-white py-2"
+                  ><span onClick={()=> gcodeClicked(item ,_index)}> {file.name}</span></div>))}</div>}
+                  
+                  </div>
+                  ))}
+    
    {!props.id && <div className="sm:flex-col1 mt-4 flex">
-    <button
-                onClick={ ()=>fileInputRefGCODE.current.click()}
-                  className="mr-2 flex max-w-xs flex-1 items-center justify-center rounded-md border border-transparent bg-indigo-600 px-8 py-3 text-base font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-gray-50 sm:w-full"
-                >
-                  Get 3d File
-                </button>
+    
                 <button
                  onClick={()=>saveObject()}
                   className=" flex max-w-xs flex-1 items-center justify-center rounded-md border border-transparent bg-indigo-600 px-8 py-3 text-base font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-gray-50 sm:w-full"
@@ -386,7 +427,18 @@ const close = async () => {
                 </button>
 
 
-   </div> }            
+   </div> }      
+   <div className="sm:flex-col1 mt-4 flex">
+    
+    <button
+     onClick={()=>createTables()}
+      className=" flex max-w-xs flex-1 items-center justify-center rounded-md border border-transparent bg-indigo-600 px-8 py-3 text-base font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-gray-50 sm:w-full"
+    >
+      Create Tableland Tables 
+    </button>
+
+
+</div>       
   
     </div>}
     { selectedTab == "Image" &&   <div className="">

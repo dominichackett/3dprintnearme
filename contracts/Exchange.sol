@@ -131,7 +131,7 @@ contract Exchange is ERC721Holder, ReentrancyGuard, Ownable{
         
         // assumption: contract will be deployed on Polygon network
 
-        if (keccak256(abi.encodePacked((_currency))) == keccak256(abi.encodePacked(('matic')))) {
+        if (keccak256(abi.encodePacked((_currency))) == keccak256(abi.encodePacked(('tfil')))) {
 
             require( msg.value  >= amountToBePaid , "Insufficient Amount");
 

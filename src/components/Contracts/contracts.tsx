@@ -1,4 +1,4 @@
-export const exchangeAddress='0x6314eFCa8588d09c874adA112EA755ae7a7c14a1'
+export const exchangeAddress='0x7302B6f27643b625fC9a8e2842F67C2464B876F9'
 export const exchangeABI = [
 	{
 		"inputs": [
@@ -488,7 +488,7 @@ export const exchangeABI = [
 	}
 ]
 
-export const PATADDRESS = '0xf4683d08092FF8101FdaD71092c155a71D039840'
+export const PATADDRESS = '0x4b48F865416946217D30F8765D4B315D62a84893'
 export const PATABI = [
 	{
 		"inputs": [],
@@ -1238,18 +1238,18 @@ export const PATABI = [
 		"type": "function"
 	}
 ]
-export const PriceRTADDRESS = '0xE8a9eA3fA8fCf12E554dC2cD1D1bA6CAd0fD94d2'
+export const PriceRTADDRESS = '0x0741b24Ae556182E1a3E41D8B4315bDEcb0e8C15'
 export const PRICERTABI = ['function addPricefeed(string memory currency, AggregatorV3Interface pricefeedAddress) public',
 'function getSpotPrice(string memory fst, string memory snd) public view returns (int256)']
 
-export const createObjectAddress = '0xD5Bc29DF48CAAD9604423cbcE415B937BA47377E'
+export const createObjectAddress = '0x5792BE9F9c0b663548bECe16Cb0B93600d81BffE'
 export const createObjectABI = ['event ObjectCreation(uint indexed id,address indexed creator,string indexed name,string details,string location)',
 'event PrintResult(uint indexed id,address indexed requestor,address indexed printer,string  name,string  status,string  location)',
 'function setPrintNearMeTokenAddress(address _PNMTAddress) public',
 'function setLockAddress(address _lockAddress) public',
 'function mintNewObject(string memory uri, string memory _objectName, string memory _objectDetails, string memory _location) public']
 
-export const PNMTADDRESS = '0x447F9a48B5af0aA45e68083FA450cEd68ead5902'
+export const PNMTADDRESS = '0x5f857FB3e2AF64DFa88BB1b087F32fe6B4d93556'
 export const PNMTABI =[
 	{
 		"inputs": [],
@@ -2301,7 +2301,7 @@ export const tokenContractAbi = [
 ]
 
 
-export const PrintObjectAddress = '0xcEc14223d07037e1fe579B0Cf7dF1263fFc89372'
+export const PrintObjectAddress = '0xaA119C8C1378e1Bd572A3741c286BcAc387aC403'
 export const PrintObjectABI =[
 	{
 		"inputs": [

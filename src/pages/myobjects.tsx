@@ -7,14 +7,16 @@ import Header from '@/components/Header/Header'
 import Footer from '@/components/Footer/Footer'
 import { TokenContext } from '../components/Context/spacetime';
 import Notification from '@/components/Notification/Notification'
-import { useSigner  } from 'wagmi'
+import { useSigner,useProvider } from 'wagmi'
 import { ethers } from 'ethers'
-import { queryMarketPlaceByOwner,insertMarketPlace } from '@/components/utils/utils'
+import { queryMarketPlaceByOwner,insertMarketPlace } from '../tableland/tableland'
 import { PNMTADDRESS,PNMTABI,PATADDRESS,exchangeAddress,exchangeABI } from '@/components/Contracts/contracts'
 import ListTokenDialog from "@/components/ListDialog/listdialog"
 import { v4 as uuidv4 } from 'uuid';
 import { format } from 'date-fns';
 import { useRouter } from "next/router";
+import { getMintedTokenURIs ,formatIPFSURL,getMintedERC1155TokenURIs} from '@/components/utils/utils'
+import { Database } from "@tableland/sdk";
 
   function classNames(...classes) {
     return classes.filter(Boolean).join(' ')
@@ -27,7 +29,8 @@ import { useRouter } from "next/router";
 
 export default function MyObjects() {
     const [openListTokenDialog,setOpenListTokenDialog] = useState(false)
-  
+    const [db,setDb] = useState()
+
   const [open,setOpen] = useState(false)
   const [listed,setListed] = useState(new Map())
 
@@ -39,6 +42,9 @@ export default function MyObjects() {
   const [myobjects,setMyObjects] = useState([])
   const { accessToken } = useContext(TokenContext);
   const { data: signer} = useSigner()
+  const provider = useProvider()
+
+
   const router = useRouter();
 
 
@@ -52,78 +58,59 @@ const close = async () => {
 };
 
 useEffect(()=>{
+  if(signer) 
+    setDb(new Database({signer}))  
+},[signer])  
+
+useEffect(()=>{
 
    async function getNFTS() {
-    const options = {
-        method: 'GET',
-        headers: {
-          accept: 'application/json'
-        }
-      };
-      
-      const owner = await signer?.getAddress(); // Value for the "owner" path parameter
-      
-      const url = `https://polygon-mumbai.g.alchemy.com/nft/v3/${process.env.NEXT_PUBLIC_ALCHEMY_API_KEY}/getNFTsForOwner?&owner=${owner}&withMetadata=true&pageSize=100`;
-      const response = await fetch(url,options)
-      const nfts = await response.json() 
-      console.log(nfts)
-      let _myobjects = []
-      let ownedNfts = nfts.ownedNfts
-      for(const index in ownedNfts)
-      {
-        
-        if( ownedNfts[index].contract.address ==PNMTADDRESS)
-        {
-           const options = {method: 'GET', headers: {accept: 'application/json'}};
+    
+    const owner = await signer?.getAddress()
+     const results = await getMintedTokenURIs(PNMTADDRESS,PNMTABI,owner,provider)
+     console.log(results)
+     let _myobjects = []
 
-           const data = await fetch(ownedNfts[index].tokenUri,options)
-           const metadata = await data.json()
-           console.log(metadata)
-           _myobjects.push({address:ownedNfts[index].contract.address,contractName:ownedNfts[index].contract.name,symbol:ownedNfts[index].contract.symbol,
-            image:ownedNfts[index].image.cachedUrl,name:ownedNfts[index].name,description:ownedNfts[index].description
-            ,tokenId:ownedNfts[index].tokenId,category:metadata.category,gcode:metadata?.gcode,material:metadata.material})
+     for (const [key, value] of results.entries()) {
+        console.log(value) 
+        _myobjects.push({address:PNMTADDRESS,contractName:"Print Near Me",symbol:"PNMT",
+          image:formatIPFSURL(value.tokenMetadata.image),name:value.tokenMetadata.name,description:value.tokenMetadata.description
+          ,tokenId:key,category:value.tokenMetadata.category,folders:value.tokenMetadata.folders,gcode:value.tokenMetadata.gcode,material:value.tokenMetadata.material})
+
+    }
+
+    const _results = await getMintedERC1155TokenURIs(PNMTADDRESS,PNMTABI,owner,provider)
+    console.log(_results)
+    
+    for (const [key, value] of _results.entries()) {
+       console.log(value) 
+       _myobjects.push({address:PNMTADDRESS,contractName:"Print Access Token",symbol:"PAT",
+         image:formatIPFSURL(value.tokenMetadata.image),name:value.tokenMetadata.name,description:value.tokenMetadata.description
+         ,tokenId:key,category:value.tokenMetadata.category,folders:value.tokenMetadata.folders,gcode:value.tokenMetadata.gcode,material:value.tokenMetadata.name.material})
+
+   }
+
+    setMyObjects(_myobjects)
 
 
-       }else if(ownedNfts[index].contract.address == PATADDRESS )
-       {
-        const options = {method: 'GET', headers: {accept: 'application/json'}};
-        const _url = `https://polygon-mumbai.g.alchemy.com/nft/v3/${process.env.NEXT_PUBLIC_ALCHEMY_API_KEY}/getNFTsForContract?contractAddress=${PNMTADDRESS}&withMetadata=true&startToken=${ownedNfts[index].tokenId}&limit=1`
-        const response = await fetch(_url, options)
-        const nfts = await response.json()
-        const nftData = nfts.nfts
-        const data = await fetch(nftData[0].tokenUri,options)
-        const metadata = await data.json()
-        _myobjects.push({address:PATADDRESS,contractName:nftData[0].contract.name,symbol:nftData[0].contract.symbol,
-          image:nftData[0].image.cachedUrl,name:nftData[0].name,description:nftData[0].description
-          ,tokenId:nftData[0].tokenId,category:metadata.category,gcode:metadata?.gcode,material:metadata.material})
-
-        
-        console.log(metadata)
-        console.log(_url)
-      }
-
-       console.log(_myobjects)
-     
-}      
-setMyObjects(_myobjects)
     
    } 
-   if(signer)
+   if(signer && provider)
    getNFTS()   
-},[signer])
+},[signer,provider])
 
 useEffect(()=>{
     async function getMyListings()
     {
          try 
-         {const results = await queryMarketPlaceByOwner(accessToken,await signer?.getAddress())
+         {const results = await queryMarketPlaceByOwner(db,await signer?.getAddress())
            console.log(results.length)
           console.log(results)
           let _listed = new Map()
 
           for(const index in results)
           {
-             _listed.set(parseInt(results[index].ITEMID) ,true)   
+             _listed.set(parseInt(results[index].itemid) ,true)   
  
           }
           
@@ -135,11 +122,9 @@ useEffect(()=>{
             console.log(error)
          }  
      }
-     if(accessToken && signer)
+     if(db && signer)
      getMyListings()
-   console.log(accessToken)
-    console.log(signer)
-},[accessToken,refreshData,signer])
+   },[db,refreshData,signer])
 
 const listToken = async (tokenid:string,price:any,_category:string)=>{
     console.log(price)
@@ -186,7 +171,7 @@ const listToken = async (tokenid:string,price:any,_category:string)=>{
                 gasLimit: 3000000})
               
              await tx4.wait()
-             const result = insertMarketPlace(accessToken,_id,parseInt(tokenid),price,timestamp,await signer?.getAddress(),_category)
+             const result = insertMarketPlace(db,_id,parseInt(tokenid),price,timestamp,await signer?.getAddress(),_category)
             setRefreshData(new Date())
             setDialogType(1) //Success
             setNotificationTitle("List Token")

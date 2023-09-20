@@ -1,7 +1,9 @@
 import { decodeBase64 } from 'tweetnacl-util';
 import nacl from 'tweetnacl'
+import axios from "axios";
+import { ethers } from "ethers";
 
-import { PNMTADDRESS } from '../Contracts/contracts';
+import { PNMTADDRESS ,PNMTABI} from '../Contracts/contracts';
 export const getAutenticationCodeSXT = async ()=> {
     
   return  fetch(`${process.env.NEXT_PUBLIC_HOST_URL}/api/getAuthCode`)
@@ -657,3 +659,154 @@ export const insertCategory = async (authToken: string,id:string,name:string) =>
       throw error;
     }
   };
+
+  export  function formatIPFSURL(url: string): string {
+    if(url.includes(".ipfs.w3s.link/"))
+      return url
+  
+    const formattedURL = url
+        .replace('ipfs://', 'https://')
+        .replace(/\/[^/]+$/, (match: string) => match.replace('/', '.ipfs.w3s.link/'));
+    
+      return formattedURL;
+    }
+
+  export async function getMintedTokenURIs(
+    contractAddress: string,
+    contractABI: any[], // Use correct ABI type
+    userAddress: string,
+    provider: ethers.providers.Web3Provider
+  ): Promise<Map<number, string>> {
+    const contract = new ethers.Contract(contractAddress, contractABI, provider);
+  
+    const mintedTokenURIs = new Map();
+    let tokenId = 1;
+    console.log(tokenId)
+    console.log(provider)
+  
+    while (true) {
+      try {
+        const tokenURI = await contract.tokenURI(tokenId);
+        // Here you might want to validate the tokenURI to ensure it's not an error message
+        if (tokenURI !== 'Family' && tokenURI!= 'uri' ) {
+          const owner = await contract.ownerOf( tokenId);
+          if (owner == userAddress) {
+
+            const metadataurl =formatIPFSURL(tokenURI)
+            console.log(metadataurl)
+             // Use Axios to fetch the token metadata
+          const response = await axios.get(metadataurl);
+          const tokenMetadata = response.data; // Assuming the response contains JSON metadata
+         console.log(tokenMetadata)
+            mintedTokenURIs.set(tokenId, {tokenURI,tokenMetadata});
+          }
+        }
+  
+        // Exit the loop if tokenURI is 'Family'
+        if (tokenURI === 'Family' || tokenURI == 'uri') {
+          break;
+        }
+  
+        tokenId++;
+      } catch (error) {
+        // Handle errors, such as tokens that don't exist
+        console.log(error)
+        break; // Exit the loop if an error occurs
+      }
+    }
+  
+    return mintedTokenURIs;
+  }
+
+
+
+  export async function getTokenMetadata(
+   tokenId:number, 
+    userAddress: string,
+    provider: ethers.providers.Web3Provider
+  ): Promise<string> {
+    const contract = new ethers.Contract(PNMTADDRESS, PNMTABI, provider);
+ 
+    try {
+      const tokenURI = await contract.tokenURI(tokenId);
+      return tokenURI  
+    }catch(error)
+    {
+         return null
+    }  
+
+  }
+
+  export async function getMintedERC1155TokenURIs(
+    contractAddress: string,
+    contractABI: any[], // Use correct ABI type
+    userAddress: string,
+    provider: ethers.providers.Web3Provider
+  ): Promise<Map<number, string>> {
+    const contract = new ethers.Contract(contractAddress, contractABI, provider);
+  
+    const mintedTokenURIs = new Map();
+    let tokenId = 1;
+    console.log(tokenId)
+    console.log(provider)
+  
+    while (true) {
+      try {
+        const tokenURI = await getTokenMetadata(tokenId,userAddress,provider);
+        // Here you might want to validate the tokenURI to ensure it's not an error message
+        if (tokenURI !== 'Family' && tokenURI!= 'uri' ) {
+          const balance = await contract.balanceOf(userAddress, tokenId);
+          console.log(balance)
+          if (balance.gt(0)) {
+
+            const metadataurl =formatIPFSURL(tokenURI)
+            console.log(metadataurl)
+             // Use Axios to fetch the token metadata
+          const response = await axios.get(metadataurl);
+          const tokenMetadata = response.data; // Assuming the response contains JSON metadata
+
+            mintedTokenURIs.set(tokenId, {tokenURI,tokenMetadata});
+          }
+        }
+  
+        // Exit the loop if tokenURI is 'Family'
+        if (tokenURI === 'Family' || tokenURI == 'uri') {
+          break;
+        }
+  
+        tokenId++;
+      } catch (error) {
+        // Handle errors, such as tokens that don't exist
+        console.log(error)
+        break; // Exit the loop if an error occurs
+      }
+    }
+  
+    return mintedTokenURIs;
+  }
+
+export async function getFileFromStaturn(url:string) {
+  const response = await axios.get(url);
+  return response.data
+
+}
+
+
+export async function register_job() {
+  const formData = new FormData();
+  const cid = "QmTgLAp2Ze2bv7WV2wnZrvtpR5pKJxZ2vtBxZPwr7rM61a"
+  const requestReceivedTime = new Date()
+  const endDate = requestReceivedTime.setMonth(requestReceivedTime.getMonth() + 1)
+  const replicationTarget = 2
+  const epochs = 4 // how many epochs before deal end should deal be renewed
+  formData.append('cid', cid)
+  formData.append('endDate', endDate)
+  formData.append('replicationTarget', replicationTarget)
+  formData.append('epochs', epochs)
+
+  const response = await axios.post(
+      'https://calibration.lighthouse.storage/api/register_job',
+      formData
+  )
+  console.log(response.data)
+}

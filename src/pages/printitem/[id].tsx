@@ -15,8 +15,10 @@ import {ethers} from 'ethers'
 import { useSigner  } from 'wagmi'
 import { v4 as uuidv4 } from 'uuid';
 import { format } from 'date-fns';
-import { insertOrder } from '@/components/utils/utils'
+import { insertOrder } from '@/tableland/tableland'
 import { TokenContext } from '@/components/Context/spacetime';
+import { getFileFromStaturn } from '@/components/utils/utils'
+import { Database } from "@tableland/sdk";
 
 const materials = [
     { name: 'PLA',cost:12},
@@ -49,10 +51,12 @@ export default function PrintItem() {
   const [filamentCost,setFilamentCost] = useState(0)
   const [filament,setFilament] = useState(0)
   const [printTime,setPrintTime] = useState(0)
+  const [db,setDb] = useState()
 
   const[itemId,setItemId] = useState()
   const [imageFile,setImageFile] = useState()
   const [gcodeFile,setGcodeFile] = useState()
+  const [folders,setFolders] = useState()
   const [material,setMaterial] = useState()
   const [description,setDescription] = useState()
   const [printer,setPrinter] = useState(null)
@@ -77,22 +81,36 @@ const close = async () => {
   }
 
   const printerCallBack = (_printer:any) =>{
+      
       setPrinter(_printer)
-      setHourlyPrice(_printer.RATE)
+      setHourlyPrice(_printer.rate)
       setFilamentPrice(_printer.MATERIALS.get(material))
-      setPrintCost((printTime*_printer.RATE))
+      setPrintCost((printTime*_printer.rate))
       setFilamentCost((filament*_printer.MATERIALS.get(material)))
 
   }
+
   useEffect(()=>{
-    if(!router.isReady) return;
+    if(signer) 
+      setDb(new Database({signer}))  
+  },[signer])  
+
+  useEffect(()=>{
+ 
+   
+     if(!router.isReady) return;
     const { id } = router.query
     const item = JSON.parse(router.query?.item)
+    console.log(item.gcode)
     setImageFile(item.image)
     setGcodeFile(item.gcode)
+    setFolders(item.folders)
+    console.log(item)
     setMaterial(item.material)
     setDescription(item.description)
     setItemId(id)
+
+
 
     
 }, [router.isReady]);
@@ -140,25 +158,29 @@ const printItem = async()=>
       signer
     );
   
-
+    console.log(date.getTime()) 
+    console.log(await signer?.getAddress())
+    console.log(printer.id) 
+    console.log(itemId,router.query.item) 
+    console.log(filamentCost.toFixed(2)) 
+    console.log(printCost) 
+    console.log(notes)
+   
     const amount = ethers.utils.parseUnits((filamentCost+printCost).toFixed(2).toString(),18)
-
-    let tx = await tokenContract.callStatic.approve(PrintObjectAddress ,amount,{
-      gasLimit: 3000000})
+    console.log(tokenContract)
+    let tx = await tokenContract.callStatic.approve(PrintObjectAddress,amount)
       console.log(tx)
+
     
-      let tx1 = await tokenContract.approve( PrintObjectAddress,amount,{
-        gasLimit: 3000000})
+      let tx1 = await tokenContract.approve( PrintObjectAddress,amount)
         await  tx1.wait()
-        let tx2 = await printContract.callStatic.printObject(itemId,printer.NAME,"usd" ,amount,{
-          gasLimit: 3000000})
+        let tx2 = await printContract.callStatic.printObject(itemId,printer.name,"usd" ,amount)
           console.log(tx)
         
-          let tx3 = await printContract.printObject(itemId,printer.NAME,"usd" ,amount,{
-            gasLimit: 3000000})
+          let tx3 = await printContract.printObject(itemId,printer.name,"usd" ,amount)
      
         await  tx3.wait()
-        const result = await insertOrder(accessToken,_id,timestamp,await signer?.getAddress(),printer.OWNER,1,itemId,router.query.item,filamentCost.toFixed(2),printCost,notes)
+        const result = await insertOrder(db,date.getTime(),await signer?.getAddress(),printer.id,itemId,router.query.item,filamentCost.toFixed(2),printCost,notes)
 
         setDialogType(1) //Success
         setNotificationTitle("Send to Printer")
@@ -251,7 +273,7 @@ const printItem = async()=>
             <Tab.Panels className="aspect-h-1 aspect-w-1 w-full">
              
                 <Tab.Panel >
-               {itemId && <ImagePanel setPrintData={setPrintData} id={itemId} image={imageFile} gcode={gcodeFile}/>}
+               {itemId && <ImagePanel setPrintData={setPrintData} id={itemId} image={imageFile} gcode={gcodeFile} folders={folders}/>}
 
                 </Tab.Panel>
             </Tab.Panels>
@@ -296,7 +318,7 @@ const printItem = async()=>
                 Click to Select Printer
               </label>
               <div className="mt-2">
-                <p className='text-white'>{printer?.NAME ? printer.NAME : "No Printer Selected" }</p>
+                <p className='text-white'>{printer?.name ? printer.name : "No Printer Selected" }</p>
               </div>
             </div>
 

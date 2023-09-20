@@ -5,12 +5,13 @@ import { XMarkIcon} from '@heroicons/react/24/outline'
 import Header from '@/components/Header/Header'
 import Footer from '@/components/Footer/Footer'
 import ImagePanel ,{ ImagePanelRef }  from '@/components/3dImage/3dImage'
-import { queryCategory} from '../components/utils/utils';
+import { queryCategory} from '../tableland/tableland'
 import { TokenContext } from '../components/Context/spacetime';
 import Notification from '@/components/Notification/Notification'
 import { useSigner  } from 'wagmi'
 import { ethers } from 'ethers'
 import { createObjectAddress,createObjectABI } from '@/components/Contracts/contracts'
+import { Database } from "@tableland/sdk";
 
 const materials = [
     { name: 'PLA',cost:12},
@@ -41,6 +42,8 @@ export default function CreateObject() {
   const { accessToken } = useContext(TokenContext);
   const [uri,setURI] = useState(null)
   const { data: signer} = useSigner()
+  const [db,setDb] = useState()
+
 
    // NOTIFICATIONS functions
 const [notificationTitle, setNotificationTitle] = useState();
@@ -72,10 +75,15 @@ const close = async () => {
   }
 
   useEffect(()=>{
+    if(signer) 
+      setDb(new Database({signer}))  
+  },[signer])  
+
+  useEffect(()=>{
     async function getCategoryQuery()
     {
          try 
-         {const results = await queryCategory(accessToken)
+         {const results = await queryCategory(db)
            console.log(results.length)
           console.log(results)
          setCategories(results)
@@ -84,10 +92,10 @@ const close = async () => {
 
          }  
      }
-     if(accessToken)
+     if(db)
      getCategoryQuery()
    console.log(accessToken)
-},[accessToken])
+},[db])
 
    // create a preview as a side effect, whenever selected file is changed
  useEffect(() => {
@@ -139,10 +147,8 @@ const close = async () => {
         signer
       );
 
-      let tx = await contract.callStatic.mintNewObject( uri, name, material,  category,{
-        gasLimit: 3000000})
-        let tx1 = await contract.mintNewObject( uri, name, material,  category,{
-          gasLimit: 3000000})
+      let tx = await contract.callStatic.mintNewObject( uri, name, material,  category)
+        let tx1 = await contract.mintNewObject( uri, name, material,  category)
           await  tx1.wait()
           setDialogType(1) //Success
           setNotificationTitle("Create Object")
@@ -279,7 +285,6 @@ const close = async () => {
               </label>
               <div className="mt-2">
                 <select
-                 onChange={materialChanged}
                   id="material"
                   name="material"
                   className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:max-w-xs sm:text-sm sm:leading-6"
@@ -306,8 +311,8 @@ const close = async () => {
 
            {categories.map((category) => (
 
-  <option key={category.ID} value={category.ID}>
-    {category.NAME}
+  <option key={category.id} value={category.id}>
+    {category.name}
   </option>
 ))}
                 </select>

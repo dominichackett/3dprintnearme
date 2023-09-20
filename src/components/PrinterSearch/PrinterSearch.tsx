@@ -3,9 +3,10 @@ import { Dialog, Transition } from '@headlessui/react'
 import { XMarkIcon } from '@heroicons/react/24/outline'
 import { LinkIcon, PlusIcon, QuestionMarkCircleIcon } from '@heroicons/react/20/solid'
 import { useSigner  } from 'wagmi'
-import { queryPrinter } from '../utils/utils'
+import { queryPrinter } from '../../tableland/tableland'
 import isoCountries from 'i18n-iso-countries';
 import { TokenContext } from '@/components/Context/spacetime';
+import { Database } from "@tableland/sdk";
 
 // Initialize the package with the desired locale (e.g., 'en')
 isoCountries.registerLocale(require('i18n-iso-countries/langs/en.json'));
@@ -29,7 +30,7 @@ const PrinterSearch=React.forwardRef<PrinterSearchRef>((props:any,ref:any)=> {
   const { data: signer} = useSigner()
   const { accessToken } = useContext(TokenContext);
   const [isClient, setIsClient] = useState(false);
-
+  const [db,setDb] = useState()
 
   const toggleOpen = (value:any) => {
     setOpen(value)
@@ -45,6 +46,12 @@ const PrinterSearch=React.forwardRef<PrinterSearchRef>((props:any,ref:any)=> {
     console.log(_printer)
   }
 
+  
+  useEffect(()=>{
+    if(signer) 
+      setDb(new Database({signer}))  
+  },[signer])  
+
   const searchForPrinter =  async ()=>{
    setPrinters([])
    const name = document.getElementById("name").value == "" ? null:document.getElementById("name").value  
@@ -52,13 +59,13 @@ const PrinterSearch=React.forwardRef<PrinterSearchRef>((props:any,ref:any)=> {
    const state = document.getElementById("state").value == "" ? null:document.getElementById("state").value  
    const zip = document.getElementById("zip").value == "" ? null:document.getElementById("zip").value  
    const country = document.getElementById("country").value == "" ? null:document.getElementById("country").value  
-   const  results = await queryPrinter(accessToken,null,name,city,state,zip,country)
+   const  results = await queryPrinter(db,null,name,city,state,zip,country)
     //console.log(results)
     let _printers = []
     for(const index in results)
     {
        const printer = results[index]
-       const materials = JSON.parse(printer.MATERIALS)
+       const materials = printer.materials
        let _materialsMap = new Map()
 
        for(const idx in materials )
@@ -263,10 +270,10 @@ const PrinterSearch=React.forwardRef<PrinterSearchRef>((props:any,ref:any)=> {
         </thead>
         <tbody className="divide-y divide-white/5">
           {printers.map((item) => (
-            <tr key={item.ID}>
+            <tr key={item.id}>
               <td className="py-4 pl-4 pr-8 sm:pl-6 lg:pl-8">
                 <div className="flex items-center gap-x-4">
-                  <div className="truncate text-sm font-medium leading-6 text-white">{item.NAME}</div>
+                  <div className="truncate text-sm font-medium leading-6 text-white">{item.name}</div>
                 </div>
               </td>
              

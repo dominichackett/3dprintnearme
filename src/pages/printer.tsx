@@ -9,11 +9,12 @@ import Footer from '@/components/Footer/Footer'
 import { useSigner  } from 'wagmi'
 
 import { TokenContext } from '../components/Context/spacetime';
-import { queryPrinter,insertPrinter,updatePrinter} from '../components/utils/utils';
+import { queryPrinter,insertPrinter,updatePrinter} from '../tableland/tableland';
 import Notification from '@/components/Notification/Notification'
 import { v4 as uuidv4 } from 'uuid';
 import {ethers} from 'ethers'
 import { PrintObjectAddress,PrintObjectABI } from '@/components/Contracts/contracts';
+import { Database } from "@tableland/sdk";
 
 // Initialize the package with the desired locale (e.g., 'en')
 isoCountries.registerLocale(require('i18n-iso-countries/langs/en.json'));
@@ -112,12 +113,20 @@ export default function Printer() {
   const [rate,setRate] = useState(0)
   const [refreshData,setRefreshData] = useState(new Date())
   const { data: signer} = useSigner()
+  const [db,setDb] = useState()
 
-  const [materials,setMaterials] = useState([
-  
-   
- 
-  ])
+  const [materials,setMaterials] = useState(
+    [
+        { name: 'PLA',cost:0},
+        { name: 'ABS',cost:0},
+        { name: 'PETG',cost:0},
+        { name: 'NYLON',cost:0},
+        { name: 'TPU',cost:0},
+        { name: 'TPE',cost:0},
+      
+       
+     
+      ])
   // NOTIFICATIONS functions
 const [notificationTitle, setNotificationTitle] = useState();
 const [notificationDescription, setNotificationDescription] = useState();
@@ -132,37 +141,49 @@ const close = async () => {
     setIsClient(true);
   }, []);
 
+
+  
+  useEffect(()=>{
+    if(signer) 
+      setDb(new Database({signer}))  
+  },[signer])  
+
   useEffect(() => {
     async function getPrinterInfo()
     {
         try{ 
-        const printer = await queryPrinter(accessToken,await signer?.getAddress(),null,null,null,null,null)
+        const printer = await queryPrinter(db,await signer?.getAddress(),null,null,null,null,null)
          console.log(printer)
          setGotPrinterInfo(true)
-         if(printer.lenght > 0)
+         if(printer.length > 0)
+         {
            setPrinterExist(true)
-           setId(printer[0].ID)
-           setName(printer[0].NAME)
-           setUrl(printer[0].URL)
-           setCity(printer[0].CITY)
-           setState(printer[0].STATE)
-           setZip(printer[0].ZIP)
-           setCountry(printer[0].COUNTRY)
-           setInfo(printer[0].INFO)
-           setRate(printer[0].RATE)
-           setMaterials(JSON.parse(printer[0].MATERIALS))
+           setId(printer[0].id)
+           setName(printer[0].name)
+           setUrl(printer[0].url)
+           setCity(printer[0].city)
+           setState(printer[0].state)
+           setZip(printer[0].zip)
+           setCountry(printer[0].country)
+           setInfo(printer[0].info)
+           setRate(printer[0].rate)
+           setMaterials(printer[0].materials)
            setPrinterExist(true)
-           console.log(printer[0].MATERIALS)
+           console.log(printer[0].materials) 
+          }
+          
         }
         catch(_error)
         {
+
+          console.log(_error)
         }  
     }
 
-    if(accessToken)
+    if(db)
       getPrinterInfo()
 
-  }, [accessToken,refreshData]);
+  }, [db,refreshData]);
 
   const savePrinter = async (e)=>
   {
@@ -198,19 +219,18 @@ const close = async () => {
             PrintObjectABI,
             signer
           );
-          let tx = await printContract.callStatic.addprinter(name,name,city,'usd',1,{
-            gasLimit: 3000000})
           
-           let tx1 = await printContract.addprinter(name,name,city,'usd',1,{
-            gasLimit: 3000000})
+          let tx = await printContract.callStatic.addprinter(_name,_name,_city,'usd',1)
+          
+           let tx1 = await printContract.addprinter(_name,_name,_city,'usd',1)
           
              await tx1.wait()
-            const _id =uuidv4()
-            await insertPrinter(accessToken,_id,await signer?.getAddress(),_name,_rate,_city,_state,_zip,_country,JSON.stringify(_materials),_info,_url)
+            
+            await insertPrinter(db,await signer?.getAddress(),_name,_rate,_city,_state,_country,_zip,JSON.stringify(_materials),_info,_url)
             setPrinterExist(true) 
         }else
         {
-          await updatePrinter(accessToken,id,await signer?.getAddress(),_name,_rate,_city,_state,_zip,_country,JSON.stringify(_materials),_info,_url)
+          await updatePrinter(db,await signer?.getAddress(),_name,_rate,_city,_state,_country,_zip,JSON.stringify(_materials),_info,_url)
           
         }
         setDialogType(1) //Success
@@ -220,6 +240,7 @@ const close = async () => {
         setRefreshData(new Date())
         isSaving.current = false
    }catch(error){
+    console.log(error)
     setDialogType(2) //Error
     setNotificationTitle("Save Printer")
     setNotificationDescription("Error Saving Printer.")

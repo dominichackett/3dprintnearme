@@ -6,10 +6,11 @@ import { EllipsisVerticalIcon } from '@heroicons/react/24/outline'
 import { CheckCircleIcon,XMarkIcon } from '@heroicons/react/20/solid'
 import Header from '@/components/Header/Header'
 import Footer from '@/components/Footer/Footer'
-import { queryOrderByOwner } from '@/components/utils/utils'
+import { queryOrderByOwner } from '@/tableland/tableland'
 import { TokenContext } from '@/components/Context/spacetime';
 import { useSigner  } from 'wagmi'
 import { useRouter } from "next/router";
+import { Database } from "@tableland/sdk";
 
 import { format } from 'date-fns';
 
@@ -26,6 +27,7 @@ import { format } from 'date-fns';
 export default function MyOrders() {
   const [open, setOpen] = useState(false)
   const [orders,setOrders] = useState([])
+  const [db,setDb] = useState()
 
   const [selectedFile, setSelectedFile] = useState()
   const [preview, setPreview] = useState('')
@@ -33,18 +35,22 @@ export default function MyOrders() {
   const { accessToken } = useContext(TokenContext);
   const router = useRouter();
 
+  useEffect(()=>{
+    if(signer) 
+      setDb(new Database({signer}))  
+  },[signer])  
 
   useEffect(()=>{
     async function getOrders(){
       try{
-       const results = await queryOrderByOwner(accessToken,await signer?.getAddress())
+       const results = await queryOrderByOwner(db,await signer?.getAddress())
        console.log(results)
        let _orders = []
        for(const index in results){
           let item = results[index];
-          item.ITEM =  JSON.parse(item.ITEM);
-          const date = new Date(item.DATEPLACED)
-          item.DATEPLACED = format(date, 'yyyy-MM-dd hh:mm:ss a');
+          item.item =  item.item;
+          const date = new Date(item.dateplaced)
+          item.dateplaced = format(date, 'yyyy-MM-dd hh:mm:ss a');
          
         _orders.push( item)    
        }
@@ -52,13 +58,13 @@ export default function MyOrders() {
        setOrders(_orders)
       }catch(err)
       {
-
+          console.log(err)
       } 
       }
 
-    if(signer && accessToken)
+    if(signer && db)
       getOrders()
-  },[accessToken,signer])
+  },[db,signer])
   const onSelectFile = (e) => {
     if (!e.target.files || e.target.files.length === 0) {
         setSelectedFile(undefined)
@@ -84,7 +90,7 @@ export default function MyOrders() {
   }, [selectedFile])
   const viewItem = async(item:any)=>{
     
-    router.push({pathname:`/printitem/${item.TOKENID}`,query:{item:JSON.stringify(item.ITEM)}});
+    router.push({pathname:`/printitem/${item.tokenid}`,query:{item:JSON.stringify(item.item)}});
   
   }
   return (
@@ -151,30 +157,32 @@ export default function MyOrders() {
           <h2 className="sr-only">Recent orders</h2>
           <div className="mx-auto max-w-7xl sm:px-2 lg:px-8">
             <div className="mx-auto max-w-2xl space-y-8 sm:px-4 lg:max-w-4xl lg:px-0">
+              {orders.map((x)=>(<div>Test</div>))}
               {orders.map((order) => (
                 <div
                   key={order.number}
                   className="border-b border-t border-gray-200 bg-white shadow-sm sm:rounded-lg sm:border"
                 >
+                  
                   <h3 className="sr-only">
-                    Order placed on <time dateTime={order.DATEPLACED}>{order.DATEPLACED}</time>
+                    Order placed on <time dateTime={order.dateplaced}>{order.dateplaced}</time>
                   </h3>
 
                   <div className="flex items-center border-b border-gray-200 p-4 sm:grid sm:grid-cols-4 sm:gap-x-6 sm:p-6">
                     <dl className="grid flex-1 grid-cols-2 gap-x-6 text-sm sm:col-span-3 sm:grid-cols-3 lg:col-span-2">
                       <div>
                         <dt className="font-medium text-gray-900">Order number</dt>
-                        <dd className="mt-1 text-gray-500">{order.ID}</dd>
+                        <dd className="mt-1 text-gray-500">{order.id}</dd>
                       </div>
                       <div className="hidden sm:block">
                         <dt className="font-medium text-gray-900">Date placed</dt>
                         <dd className="mt-1 text-gray-500">
-                          <time dateTime={order.DATEPLACED}>{order.DATEPLACED}</time>
+                          <time dateTime={order.dateplaced}>{order.dateplaced}</time>
                         </dd>
                       </div>
                       <div>
                         <dt className="font-medium text-gray-900">Total amount</dt>
-                        <dd className="mt-1 font-medium text-gray-900">${(order.HOURLYCOST+order.FILAMENTCOST).toFixed(2)}</dd>
+                        <dd className="mt-1 font-medium text-gray-900">${(parseFloat(order.hourlycost)+parseFloat(order.filamentcost)).toFixed(2)}</dd>
                       </div>
                      
                     </dl>
@@ -248,17 +256,17 @@ export default function MyOrders() {
                         <div className="flex items-center sm:items-start">
                           <div className="h-20 w-20 flex-shrink-0 overflow-hidden rounded-lg bg-gray-200 sm:h-40 sm:w-40">
                             <img
-                              src={order.ITEM.image}
+                              src={order.item.image}
                               alt={"Image"}
                               className="h-full w-full object-cover object-center"
                             />
                           </div>
                           <div className="ml-6 flex-1 text-sm">
                             <div className="font-medium text-gray-900 sm:flex sm:justify-between">
-                              <h5>{order.ITEM.name}</h5>
-                              <p className="mt-2 sm:mt-0">${(order.HOURLYCOST+order.FILAMENTCOST).toFixed(2)}</p>
+                              <h5>{order.item.name}</h5>
+                              <p className="mt-2 sm:mt-0">${(parseFloat(order.hourlycost)+parseFloat(order.filamentcost)).toFixed(2)} </p>
                             </div>
-                            <p className="hidden text-gray-500 sm:mt-2 sm:block">{order.ITEM.description}</p>
+                            <p className="hidden text-gray-500 sm:mt-2 sm:block">{order.item.description}</p>
                           </div>
                         </div>
 
@@ -266,7 +274,7 @@ export default function MyOrders() {
                           <div className="flex items-center">
                             <CheckCircleIcon className="h-5 w-5 text-green-500" aria-hidden="true" />
                             <p className="ml-2 text-sm font-medium text-gray-500">
-                              {order.STATUS == 1? "Pending":"Delivered"}
+                              {order.status == 1? "Pending":"Delivered"}
                             </p>
                           </div>
 

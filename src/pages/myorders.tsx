@@ -48,7 +48,6 @@ export default function MyOrders() {
        let _orders = []
        for(const index in results){
           let item = results[index];
-          item.item =  item.item;
           const date = new Date(item.dateplaced)
           item.dateplaced = format(date, 'yyyy-MM-dd hh:mm:ss a');
          
@@ -157,7 +156,6 @@ export default function MyOrders() {
           <h2 className="sr-only">Recent orders</h2>
           <div className="mx-auto max-w-7xl sm:px-2 lg:px-8">
             <div className="mx-auto max-w-2xl space-y-8 sm:px-4 lg:max-w-4xl lg:px-0">
-              {orders.map((x)=>(<div>Test</div>))}
               {orders.map((order) => (
                 <div
                   key={order.number}

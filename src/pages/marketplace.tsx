@@ -6,12 +6,13 @@ import { ChevronDownIcon } from '@heroicons/react/20/solid'
 import Header from '@/components/Header/Header'
 import Footer from '@/components/Footer/Footer'
 import { TokenContext } from '../components/Context/spacetime';
-import { useSigner  } from 'wagmi'
-import { queryMarketPlace } from '@/components/utils/utils'
-import { PNMTADDRESS,PNMTABI,PATADDRESS,exchangeAddress,exchangeABI ,InflationABI,InflationAddress} from '@/components/Contracts/contracts'
+import { useSigner,useProvider  } from 'wagmi'
+import { queryMarketPlace } from '@/tableland/tableland'
+import { PNMTADDRESS,PNMTABI,exchangeAddress} from '@/components/Contracts/contracts'
 import { useRouter } from "next/router";
 import { ethers } from 'ethers' 
-
+import { Database } from "@tableland/sdk";
+import { getMintedTokenURIs,formatIPFSURL } from '@/components/utils/utils'
 
 
 const sortOptions = [
@@ -57,46 +58,35 @@ export default function MaketPlace() {
   const [gotInflation,setGotInflation] = useState(false)
   const [gotListedPrice,setGotListedPrice] = useState(false)
   const [refreshData,setRefreshData] = useState(new Date())
+  const [db,setDb] = useState()
+  const provider = useProvider()
+
+
+  useEffect(()=>{
+    if(signer) 
+      setDb(new Database({signer}))  
+  },[signer])  
 
   useEffect(()=>{
 
     async function getNFTS() {
-     const options = {
-         method: 'GET',
-         headers: {
-           accept: 'application/json'
-         }
-       };
-       
-       
-       const url = `https://polygon-mumbai.g.alchemy.com/nft/v3/${process.env.NEXT_PUBLIC_ALCHEMY_API_KEY}/getNFTsForOwner?&owner=${exchangeAddress}&withMetadata=true&pageSize=100`;
-       const response = await fetch(url,options)
-       const nfts = await response.json() 
-       console.log(nfts)
-       let _marketPlaceObjects = []
-       let ownedNfts = nfts.ownedNfts
-       for(const index in ownedNfts)
-       {
-         
-         if((ownedNfts[index].contract.address == PATADDRESS || ownedNfts[index].contract.address ==PNMTADDRESS) && ownedNfts[index].tokenUri !=null && parseInt(ownedNfts[index].tokenId )>8) 
-         {
-            const options = {method: 'GET', headers: {accept: 'application/json'}};
+        
+      const owner = await signer?.getAddress()
+      const results = await getMintedTokenURIs(PNMTADDRESS,PNMTABI,exchangeAddress,provider)
+      console.log(results)
+      let _myobjects = []
  
-            const data = await fetch(ownedNfts[index].tokenUri,options)
-            const metadata = await data.json()
-            console.log(metadata)
-            _marketPlaceObjects.push({address:ownedNfts[index].contract.address,contractName:ownedNfts[index].contract.name,symbol:ownedNfts[index].contract.symbol,
-             image:ownedNfts[index].image.cachedUrl,name:ownedNfts[index].name,description:ownedNfts[index].description
-             ,tokenId:ownedNfts[index].tokenId,category:metadata.category,gcode:metadata?.gcode,material:metadata.material})
+      for (const [key, value] of results.entries()) {
+         console.log(value) 
+         _myobjects.push({address:PNMTADDRESS,contractName:"Print Near Me",symbol:"PNMT",
+           image:formatIPFSURL(value.tokenMetadata.image),name:value.tokenMetadata.name,description:value.tokenMetadata.description
+           ,tokenId:key,category:value.tokenMetadata.category,folders:value.tokenMetadata.folders,gcode:value.tokenMetadata.gcode,material:value.tokenMetadata.material})
  
+     }
  
-        }
- 
-       
- }      
+  
 
-
- setMarketPlaceItems(_marketPlaceObjects)
+ setMarketPlaceItems(_myobjects)
      
     } 
     getNFTS()   
@@ -107,14 +97,14 @@ export default function MaketPlace() {
   async function getListings()
   {
        try 
-       {const results = await queryMarketPlace(accessToken)
+       {const results = await queryMarketPlace(db)
          console.log(results.length)
         console.log(results)
         let _listed = new Map()
         for(const index in results)
         {
            
-          _listed.set(results[index].ITEMID ,results[index].PRICE*inflateRate)   
+          _listed.set(parseInt(results[index].itemid) ,results[index].price)   
         }
         
         setGotListedPrice(true)
@@ -122,39 +112,13 @@ export default function MaketPlace() {
       
        }catch(error)
        {
-
+           console.log(error)
        }  
    }
-   if(accessToken && gotInflation)
+   if(db )
    getListings()
- console.log(accessToken)
-},[accessToken,refreshData,gotInflation])
-
-useEffect(()=>{
-  async function getInflation()
-  {
-    const inFlationContract = new ethers.Contract(
-      InflationAddress,
-      InflationABI,
-      signer
-    );
-   
-       try{
-       const _inflationRate = await inFlationContract.inflationWei()
-       const rate = ethers.utils.formatEther(_inflationRate)
-       console.log(parseFloat(rate).toFixed(2))
-       setInflationRate(parseFloat(((parseFloat(rate)/100)+1).toFixed(2)))
-       setGotInflation(true)
-       }catch(err)
-       {
-
-       }
-     
-  }
-
-  if(signer)
-    getInflation()
-},[signer])
+ 
+},[db,refreshData])
 
 const viewItem = async(item:any)=>{
   item["price"] = listedPrice.get(parseInt(item.tokenId))
@@ -354,7 +318,7 @@ const viewItem = async(item:any)=>{
                     </button>
                     <div className="mt-4 flex items-center justify-between text-base font-medium text-white">
                       <h3>{product.name}</h3>
-                      <p>${listedPrice.get(parseInt(product.tokenId))}</p>
+                      <p>${listedPrice.get(product.tokenId)}</p>
                     </div>
                     <div className="flex items-center justify-between text-base font-medium text-white">
 

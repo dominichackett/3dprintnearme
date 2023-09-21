@@ -9,10 +9,11 @@ import { EllipsisVerticalIcon } from '@heroicons/react/24/outline'
 import { CheckCircleIcon } from '@heroicons/react/20/solid'
 import Header from '@/components/Header/Header'
 import Footer from '@/components/Footer/Footer'
-import { queryOrderForPrinter,updateOrderStatus } from '@/components/utils/utils'
+import { queryOrderForPrinter,updateOrderStatus } from '@/tableland/tableland'
 import { TokenContext } from '@/components/Context/spacetime';
 import { useSigner  } from 'wagmi'
 import { useRouter } from "next/router";
+import { Database } from "@tableland/sdk";
 
 import { format } from 'date-fns';
 
@@ -35,20 +36,24 @@ export default function PrintOrder() {
   const { data: signer} = useSigner()
   const { accessToken } = useContext(TokenContext);
   const router = useRouter();
+  const [db,setDb] = useState()
+  useEffect(()=>{
+    if(signer) 
+      setDb(new Database({signer}))  
+  },[signer])  
 
 
   useEffect(()=>{
     async function getOrders(){
       try{
-       const results = await queryOrderForPrinter(accessToken,await signer?.getAddress())
+       const results = await queryOrderForPrinter(db,await signer?.getAddress())
        console.log(results)
        let _orders = []
        for(const index in results){
           let item = results[index];
-          item.ITEM =  JSON.parse(item.ITEM);
-          item.ITEM.notes = item.NOTES
-          const date = new Date(item.DATEPLACED)
-          item.DATEPLACED = format(date, 'yyyy-MM-dd hh:mm:ss a');
+          item.item.notes = item.notes
+          const date = new Date(item.dateplaced)
+          item.dateplaced = format(date, 'yyyy-MM-dd hh:mm:ss a');
          
         _orders.push( item)    
        }
@@ -60,9 +65,9 @@ export default function PrintOrder() {
       } 
       }
 
-    if(signer && accessToken)
+    if(signer && db)
       getOrders()
-  },[accessToken,signer,refreshData])
+  },[db,signer,refreshData])
   const onSelectFile = (e) => {
     if (!e.target.files || e.target.files.length === 0) {
         setSelectedFile(undefined)
@@ -89,13 +94,13 @@ export default function PrintOrder() {
 
   const printOrder = async(item:any)=>{
     
-    router.push({pathname:`/printer/${item.TOKENID}`,query:{item:JSON.stringify(item.ITEM)}});
+    router.push({pathname:`/printer/${item.tokenid}`,query:{item:JSON.stringify(item.item)}});
   
   }
 
   const setDelivered = async(_id:string) =>{
     try {
-         await updateOrderStatus(accessToken,_id,2)
+         await updateOrderStatus(db,_id,2)
          setRefreshData(new Date())
     }
     catch(error)
@@ -173,31 +178,31 @@ export default function PrintOrder() {
                   className="border-b border-t border-gray-200 bg-white shadow-sm sm:rounded-lg sm:border"
                 >
                   <h3 className="sr-only">
-                    Order placed on <time dateTime={order.DATEPLACED}>{order.DATEPLACED}</time>
+                    Order placed on <time dateTime={order.dateplaced}>{order.dateplaced}</time>
                   </h3>
 
                   <div className="flex items-center border-b border-gray-200 p-4 sm:grid sm:grid-cols-4 sm:gap-x-6 sm:p-6">
                     <dl className="grid flex-1 grid-cols-2 gap-x-6 text-sm sm:col-span-3 sm:grid-cols-3 lg:col-span-2">
                       <div>
                         <dt className="font-medium text-gray-900">Order number</dt>
-                        <dd className="mt-1 text-gray-500">{order.ID}</dd>
+                        <dd className="mt-1 text-gray-500">{order.id}</dd>
                       </div>
                       <div className="hidden sm:block">
                         <dt className="font-medium text-gray-900">Date placed</dt>
                         <dd className="mt-1 text-gray-500">
-                          <time dateTime={order.DATEPLACED}>{order.DATEPLACED}</time>
+                          <time dateTime={order.dateplaced}>{order.dateplaced}</time>
                         </dd>
                       </div>
                       <div>
                         <dt className="font-medium text-gray-900">Total amount</dt>
-                        <dd className="mt-1 font-medium text-gray-900">${(order.HOURLYCOST+order.FILAMENTCOST).toFixed(2)}</dd>
+                        <dd className="mt-1 font-medium text-gray-900">${(parseFloat(order.hourlycost)+parseFloat(order.filamentcost)).toFixed(2)}</dd>
                       </div>
                     </dl>
 
                     <Menu as="div" className="relative flex justify-end lg:hidden">
                       <div className="flex items-center">
                         <Menu.Button className="-m-2 flex items-center p-2 text-gray-400 hover:text-gray-500">
-                          <span className="sr-only">Options for order {order.ID}</span>
+                          <span className="sr-only">Options for order {order.id}</span>
                           <EllipsisVerticalIcon className="h-6 w-6" aria-hidden="true" />
                         </Menu.Button>
                       </div>
@@ -263,17 +268,17 @@ export default function PrintOrder() {
                         <div className="flex items-center sm:items-start">
                           <div className="h-20 w-20 flex-shrink-0 overflow-hidden rounded-lg bg-gray-200 sm:h-40 sm:w-40">
                             <img
-                              src={order.ITEM.image}
+                              src={order.item.image}
                               alt={"Image"}
                               className="h-full w-full object-cover object-center"
                             />
                           </div>
                           <div className="ml-6 flex-1 text-sm">
                             <div className="font-medium text-gray-900 sm:flex sm:justify-between">
-                              <h5>{order.ITEM.name}</h5>
-                              <p className="mt-2 sm:mt-0">${(order.HOURLYCOST+order.FILAMENTCOST).toFixed(2)}</p>
+                              <h5>{order.item.name}</h5>
+                              <p className="mt-2 sm:mt-0">${(parseFloat(order.hourlycost)+parseFloat(order.filamentcost)).toFixed(2)}</p>
                             </div>
-                            <p className="hidden text-gray-500 sm:mt-2 sm:block">{order.ITEM.description}</p>
+                            <p className="hidden text-gray-500 sm:mt-2 sm:block">{order.item.description}</p>
                           </div>
                         </div>
 
@@ -281,14 +286,14 @@ export default function PrintOrder() {
                           <div className="flex items-center">
                             <CheckCircleIcon className="h-5 w-5 text-green-500" aria-hidden="true" />
                             <p className="ml-2 text-sm font-medium text-gray-500">
-                              {order.STATUS == 1? "Pending":"Delivered"}
+                              {order.status == 1? "Pending":"Delivered"}
                             </p>
                           </div>
 
                           <div className="mt-6 flex items-center space-x-4 divide-x divide-gray-200 border-t border-gray-200 pt-4 text-sm font-medium sm:ml-4 sm:mt-0 sm:border-none sm:pt-0">
                            
                             <div className="flex flex-1 justify-center pl-4">
-                             { order.STATUS == 1 && <button onClick={()=>setDelivered(order.ID)} className="whitespace-nowrap text-indigo-600 hover:text-indigo-500">
+                             { order.STATUS == 1 && <button onClick={()=>setDelivered(order.id)} className="whitespace-nowrap text-indigo-600 hover:text-indigo-500">
                                 Set Delivered
                               </button>}
                             </div>

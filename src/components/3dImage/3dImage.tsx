@@ -336,7 +336,8 @@ const close = async () => {
     else
     {
       setSelectedGCODEFile(fileMap.get(selectedGCODEFiles[item][index].cid))
-
+      if(props.setFile)
+        props.setFile(selectedGCODEFiles[item][index].name,fileMap.get(selectedGCODEFiles[item][index].cid))    
     }
        
     }

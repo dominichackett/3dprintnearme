@@ -92,12 +92,12 @@ const { meta: insert } = await db
 await insert.txn?.wait();
 }
 
-export const insertMarketPlace = async(db:any,itemid:number,price:string,datelisted:string,owner:string,category:number)=>{
+export const insertMarketPlace = async(db:any,itemid:string,price:string,datelisted:number,owner:string,category:number)=>{
     const { meta: insert } = await db
     .prepare(`INSERT INTO ${marketPlaceTable} ( itemid,price,datelisted,owner,category) VALUES ( ?,?,?,?,?);`)
     .bind(itemid,price,datelisted,owner,category)
     .run();
-    
+
     // Wait for transaction finality
     await insert.txn?.wait();
 }
@@ -155,7 +155,7 @@ export const queryCategory = async(db:any)=>{
 
 export const queryMarketPlace = async(db:any)=>{
 
-    const { results } = await db.prepare(`SELECT * FROM ${marketPlaceTable} order by dateplaced;`).all();
+    const { results } = await db.prepare(`SELECT * FROM ${marketPlaceTable} order by datelisted desc;`).all();
 
    return results;
 
@@ -163,7 +163,7 @@ export const queryMarketPlace = async(db:any)=>{
 
 export const queryMarketPlaceByOwner = async(db:any,owner:string)=>{
 
-    const { results } = await db.prepare(`SELECT * FROM ${marketPlaceTable} where owner='${owner}' order by dateplaced desc;`).all();
+    const { results } = await db.prepare(`SELECT * FROM ${marketPlaceTable} where owner='${owner}' order by datelisted desc;`).all();
 
    return results;
 
@@ -171,7 +171,7 @@ export const queryMarketPlaceByOwner = async(db:any,owner:string)=>{
 
 export const queryOrderForPrinter = async(db:any,printer:string,)=>{
 
-    const { results } = await db.prepare(`SELECT * FROM ${orderTable} where printer=${printer} order by dateplaced desc;`).all();
+    const { results } = await db.prepare(`SELECT * FROM ${orderTable} where printer='${printer}' order by dateplaced desc;`).all();
 
    return results;
 

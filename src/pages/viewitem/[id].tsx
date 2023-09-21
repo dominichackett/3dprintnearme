@@ -9,7 +9,7 @@ import ImagePanel ,{ ImagePanelRef } from '@/components/3dImage/3dImage'
 import { useRouter } from 'next/router'
 import Notification from '@/components/Notification/Notification'
 import { ethers } from 'ethers'
-import { PriceRTADDRESS,PNMTADDRESS, PRICERTABI,tokenContractAbi, exchangeAddress, exchangeABI } from '@/components/Contracts/contracts'
+import { PriceRTADDRESS,PNMTADDRESS, PRICERTABI,tokenContractAddress,tokenContractAbi, exchangeAddress, exchangeABI } from '@/components/Contracts/contracts'
 import { useSigner  } from 'wagmi'
 
 const materials = [
@@ -26,7 +26,7 @@ const materials = [
 
   const tokens = [
     
-    {name: 'usd',address:"0x917a66BEA49a10E717a3779687d158563b3B1080" }
+    {name: 'usd',address:tokenContractAddress }
    
  
   ]
@@ -46,6 +46,8 @@ export default function ViewItem() {
   const[itemId,setItemId] = useState()
   const [imageFile,setImageFile] = useState()
   const [gcodeFile,setGcodeFile] = useState()
+  const [folders,setFolders] = useState()
+
   const [price,setPrice] = useState()
   const [material,setMaterial] = useState()
   const [description,setDescription] = useState()
@@ -68,6 +70,8 @@ const close = async () => {
     const item = JSON.parse(router.query?.item)
     setImageFile(item.image)
     setGcodeFile(item.gcode)
+    setFolders(item.folders)
+
     setPrice(item.price)
     setMaterial(item.material)
     setDescription(item.description)
@@ -83,13 +87,9 @@ const close = async () => {
 
     const paymentTokenAddress = document.getElementById("payment")?.value 
     const paymentTokenName  =  document.getElementById("payment")?.selectedOptions[0].textContent
-    let amount = ethers.utils.parseUnits(price.toString(),6)
+    let amount = ethers.utils.parseUnits(price.toString(),18)
 
-    const priceRTContract = new ethers.Contract(
-      PriceRTADDRESS,
-      PRICERTABI,
-      signer
-    );
+   alert(paymentTokenAddress)
 
     const tokenContract = new ethers.Contract(
       paymentTokenAddress,
@@ -103,36 +103,25 @@ const close = async () => {
       signer
     );
   try{
-    if(paymentTokenAddress!='0x917a66BEA49a10E717a3779687d158563b3B1080')  // not USD
-   {
-
-     const spotPrice = await priceRTContract.getSpotPrice('usd', paymentTokenName)
-     console.log(spotPrice.toNumber()*price)
-     amount = ethers.utils.parseUnits((spotPrice.toNumber()*price).toString(),18)
-     console.log(amount)
-    
-    }
+  
 
     if(paymentTokenAddress!=0)
     {
-   let tx = await tokenContract.callStatic.approve(exchangeAddress ,amount,{
-      gasLimit: 3000000})
+      alert(2)
+   let tx = await tokenContract.callStatic.approve(exchangeAddress ,amount)
       console.log(tx)
     
-      let tx1 = await tokenContract.approve( exchangeAddress,amount,{
-        gasLimit: 3000000})
+      let tx1 = await tokenContract.approve( exchangeAddress,amount)
      
         await  tx1.wait()
        
 
         
       
-       let tx3 = await exchangeContract.callStatic.buyPAT(paymentTokenName ,itemId,{
-        gasLimit: 3000000})
+       let tx3 = await exchangeContract.callStatic.buyPAT(paymentTokenName ,itemId)
         console.log(tx3)
       
-        let tx4 = await exchangeContract.buyPAT(paymentTokenName ,itemId,{
-          gasLimit: 3000000})
+        let tx4 = await exchangeContract.buyPAT(paymentTokenName ,itemId)
        
           await  tx4.wait()
      }else
@@ -166,7 +155,7 @@ let tx6 = await exchangeContract.buyPAT(paymentTokenName ,itemId,{
   }else {
   // console.log(error)
    //const errorMessage = ethers.utils.revert(error.reason);
-    setNotificationDescription(`Transaction failed with error: ${error.error.data.message}`);
+    setNotificationDescription(`Transaction failed with error: ${error}`);
     console.log(error.error)
   
 }
@@ -239,7 +228,7 @@ let tx6 = await exchangeContract.buyPAT(paymentTokenName ,itemId,{
 
             <Tab.Panels className="aspect-h-1 aspect-w-1 w-full">
                 <Tab.Panel >
-               {itemId && <ImagePanel setPrintData={setPrintData} id={itemId} image={imageFile} gcode={gcodeFile}/>}
+               {itemId && <ImagePanel setPrintData={setPrintData} id={itemId} image={imageFile} gcode={gcodeFile} folders={folders}/>}
 
                 </Tab.Panel>
             </Tab.Panels>
@@ -311,7 +300,7 @@ let tx6 = await exchangeContract.buyPAT(paymentTokenName ,itemId,{
         name="payment"
         className="p-2 block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:max-w-xs sm:text-sm sm:leading-6"
       >
-        <option value={0}>matic</option>    
+        <option value={0}>tfil</option>    
         {tokens.map((token) => (
           <option key={token.address} value={token.address}>{token.name}</option>
         ))}

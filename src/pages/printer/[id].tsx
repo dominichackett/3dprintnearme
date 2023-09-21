@@ -14,8 +14,9 @@ import {ethers} from 'ethers'
 import { useSigner  } from 'wagmi'
 import { v4 as uuidv4 } from 'uuid';
 import { format } from 'date-fns';
-import { queryPrinter } from '@/components/utils/utils'
+import { queryPrinter } from '@/tableland/tableland'
 import { TokenContext } from '@/components/Context/spacetime';
+import { Database } from "@tableland/sdk";
 
 const materials = [
     { name: 'PLA',cost:12},
@@ -48,7 +49,7 @@ export default function Printer() {
   const [filamentCost,setFilamentCost] = useState(0)
   const [filament,setFilament] = useState(0)
   const [printTime,setPrintTime] = useState(0)
-
+  const [folders,setFolders] = useState()
   const[itemId,setItemId] = useState()
   const [imageFile,setImageFile] = useState()
   const [gcodeFile,setGcodeFile] = useState()
@@ -58,7 +59,9 @@ export default function Printer() {
   const router = useRouter()
   const { data: signer} = useSigner()
   const { accessToken } = useContext(TokenContext);
-
+  const [db,setDb] = useState()
+  const [filename,setFilename] = useState(null)
+  const [gcode,setGcode] = useState()
   const imagePanelRef = useRef<ImagePanelRef>(null)
   
 // NOTIFICATIONS functions
@@ -70,48 +73,61 @@ const close = async () => {
  setShow(false);
 };
   
+   const setFile = (_filename:any,_gcode:any)=>{
+    setFilename(_filename)
+    setGcode(_gcode)
 
+   }
    function printerCallBack  (_printer:any) {
    
       setPrinter(_printer)
-      setHourlyPrice(_printer.RATE)
-      setFilamentPrice(_printer.MATERIALS.get(material))
-      setPrintCost((printTime*_printer.RATE))
-      setFilamentCost((filament*_printer.MATERIALS.get(material)))
+      setHourlyPrice(_printer.rate)
+      setFilamentPrice(_printer.materials.get(material))
+      setPrintCost((printTime*_printer.rate))
+      setFilamentCost((filament*_printer.materials.get(material)))
 
   }
+
+
+  useEffect(()=>{
+    if(signer) 
+      setDb(new Database({signer}))  
+  },[signer])  
 
   useEffect(() => {
     async function getPrinterInfo()
     {
         try{ 
-        const result = await queryPrinter(accessToken,await signer?.getAddress(),null,null,null,null,null)
+        const result = await queryPrinter(db,await signer?.getAddress(),null,null,null,null,null)
          console.log(result)
          if(result.length > 0)
          {
             const _printer =result[0]
             let _materialsMap = new Map()
-            const materials = JSON.parse(_printer.MATERIALS)
+            const materials = _printer.materials
 
 
             for(const idx in materials )
             {
                _materialsMap.set(materials[idx].name,parseFloat(materials[idx].cost))
              }       
-            _printer.MATERIALS = _materialsMap
+            _printer.materials = _materialsMap
+            console.log(_printer)
             console.log(_printer)
             printerCallBack(_printer)
          }
         }
         catch(_error)
         {
+
+            console.log(_error)
         }  
     }
 
-    if(accessToken && signer  && material)
+    if(db && signer  && material)
       getPrinterInfo()
 
-  }, [accessToken,signer,material])
+  }, [db,signer,material])
 
 
   useEffect(()=>{
@@ -120,9 +136,12 @@ const close = async () => {
     const item = JSON.parse(router.query?.item)
     setImageFile(item.image)
     setGcodeFile(item.gcode)
+    setFolders(item.folders)
+
     setMaterial(item.material)
     setNotes(item.notes)
     setItemId(id)
+    console.log(item.gcode,id)
 
     
 }, [router.isReady]);
@@ -134,14 +153,25 @@ const close = async () => {
   }
 
 const printItem = async()=>{
- 
-  const apiKey = printer.URL.substring(printer.URL.lastIndexOf('/') + 1);
-  const filename = gcodeFile.substring(gcodeFile.lastIndexOf('/') + 1);
 
-  const printerURL= printer.URL.replace(apiKey,"")
-  const response = await fetch(gcodeFile);
-  if (response.ok) {
-    const text = await response.text();
+  if(!filename || !gcode)
+  {
+    setDialogType(2) //Error
+    setNotificationTitle("Print")
+    setNotificationDescription(`Error File not selected` )
+    setShow(true)  
+    return
+
+  }
+  console.log(filename)
+ // console.log(await gcode.text() )
+  
+  const apiKey = printer.url.substring(printer.url.lastIndexOf('/') + 1);
+
+  const printerURL= printer.url.replace(apiKey,"")
+
+
+  const text = await gcode.text();
 
     const formData = new FormData();
     formData.append('file', new Blob([text], { type: 'text/plain' }), filename);
@@ -150,6 +180,10 @@ const printItem = async()=>{
      console.log(filename)
     let response1;
     try {
+      setDialogType(3) //Info
+      setNotificationTitle("Print")
+      setNotificationDescription(`Sending file ${filename} to printer.`)
+      setShow(true)
       response1 = await fetch(`${printerURL}api/files/local`, {
         method: 'POST',
         body: formData
@@ -164,11 +198,11 @@ const printItem = async()=>{
     } catch (error) {
       setDialogType(2) //Error
       setNotificationTitle("Print")
-      setNotificationDescription(`Error printing job.  ${_error.error}` )
+      setNotificationDescription(`Error printing job.  ${error}` )
       setShow(true)  
     }
 
-}
+
 
 
 }
@@ -235,7 +269,7 @@ const printItem = async()=>{
             <Tab.Panels className="aspect-h-1 aspect-w-1 w-full">
              
                 <Tab.Panel >
-               {itemId && <ImagePanel setPrintData={setPrintData} id={itemId} image={imageFile} gcode={gcodeFile}/>}
+               {itemId && <ImagePanel setPrintData={setPrintData} id={itemId} image={imageFile} gcode={gcodeFile} folders={folders} setFile={setFile}/>}
 
                 </Tab.Panel>
             </Tab.Panels>

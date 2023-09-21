@@ -9,7 +9,7 @@ import { TokenContext } from '../components/Context/spacetime';
 import Notification from '@/components/Notification/Notification'
 import { useSigner,useProvider } from 'wagmi'
 import { ethers } from 'ethers'
-import { queryMarketPlaceByOwner,insertMarketPlace } from '../tableland/tableland'
+import { queryMarketPlaceByOwner,insertMarketPlace,queryCategory } from '../tableland/tableland'
 import { PNMTADDRESS,PNMTABI,PATADDRESS,exchangeAddress,exchangeABI } from '@/components/Contracts/contracts'
 import ListTokenDialog from "@/components/ListDialog/listdialog"
 import { v4 as uuidv4 } from 'uuid';
@@ -33,7 +33,7 @@ export default function MyObjects() {
 
   const [open,setOpen] = useState(false)
   const [listed,setListed] = useState(new Map())
-
+ const [categoryMap,setCategoryMap] = useState(new Map())
   const [gotListed,setGotListed] = useState(false)
   const [refreshData,setRefreshData] = useState(new Date())
   const [tokenId,setTokenId] = useState()
@@ -100,6 +100,26 @@ useEffect(()=>{
 },[signer,provider])
 
 useEffect(()=>{
+    async function getCategory(){
+      try 
+      {const results = await queryCategory(db)
+        console.log(results.length)
+       console.log(results)
+       let _category = new Map()
+
+       for(const index in results)
+       {
+          _category.set(results[index].name ,results[index].id)   
+
+       }
+       
+        setCategoryMap(_category)
+     
+      }catch(error)
+      {
+         console.log(error)
+      }
+    }
     async function getMyListings()
     {
          try 
@@ -123,7 +143,9 @@ useEffect(()=>{
          }  
      }
      if(db && signer)
-     getMyListings()
+     { getMyListings()
+       getCategory()
+    }
    },[db,refreshData,signer])
 
 const listToken = async (tokenid:string,price:any,_category:string)=>{
@@ -142,8 +164,8 @@ const listToken = async (tokenid:string,price:any,_category:string)=>{
         const date = new Date()
         const timestamp = format(date, 'yyyy-MM-dd HH:mm:ss');
 
-
-
+        //console.log(tokenid,price,date.getTime(),await signer?.getAddress(),categoryMap.get(_category))    
+       // return  
         const PNMTContract = new ethers.Contract(
             PNMTADDRESS,
             PNMTABI,
@@ -156,22 +178,18 @@ const listToken = async (tokenid:string,price:any,_category:string)=>{
           signer
         );
   
-        let tx = await PNMTContract.callStatic.approve(exchangeAddress,tokenid,{
-          gasLimit: 3000000})
+        let tx = await PNMTContract.callStatic.approve(exchangeAddress,tokenid)
         
-         let tx1 = await PNMTContract.approve(exchangeAddress,tokenid,{
-            gasLimit: 3000000})
+         let tx1 = await PNMTContract.approve(exchangeAddress,tokenid)
            await tx1.wait()
   
-           const _price  =  ethers.utils.parseUnits(price,6)
+           const _price  =  ethers.utils.parseUnits(price,18)
   
-        let tx3 = await ExchangeContract.callStatic.listPrintNearMeToken(tokenid,price,"usd",{
-            gasLimit: 3000000})
-        let tx4 = await ExchangeContract.listPrintNearMeToken(tokenid,price,"usd",{
-                gasLimit: 3000000})
+        let tx3 = await ExchangeContract.callStatic.listPrintNearMeToken(tokenid,price,"usd")
+        let tx4 = await ExchangeContract.listPrintNearMeToken(tokenid,price,"usd")
               
              await tx4.wait()
-             const result = insertMarketPlace(db,_id,parseInt(tokenid),price,timestamp,await signer?.getAddress(),_category)
+             const result =await insertMarketPlace(db,tokenid,price,date.getTime(),await signer?.getAddress(),categoryMap.get(_category))
             setRefreshData(new Date())
             setDialogType(1) //Success
             setNotificationTitle("List Token")

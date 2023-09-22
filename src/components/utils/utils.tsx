@@ -754,7 +754,7 @@ export const insertCategory = async (authToken: string,id:string,name:string) =>
       try {
         const tokenURI = await getTokenMetadata(tokenId,userAddress,provider);
         // Here you might want to validate the tokenURI to ensure it's not an error message
-        if (tokenURI !== 'Family' && tokenURI!= 'uri' ) {
+        if (tokenURI !== null ) {
           const balance = await contract.balanceOf(userAddress, tokenId);
           console.log(balance)
           if (balance.gt(0)) {
@@ -770,7 +770,7 @@ export const insertCategory = async (authToken: string,id:string,name:string) =>
         }
   
         // Exit the loop if tokenURI is 'Family'
-        if (tokenURI === 'Family' || tokenURI == 'uri') {
+        if (tokenURI === null) {
           break;
         }
   

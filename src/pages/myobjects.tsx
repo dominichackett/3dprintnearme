@@ -10,7 +10,7 @@ import Notification from '@/components/Notification/Notification'
 import { useSigner,useProvider } from 'wagmi'
 import { ethers } from 'ethers'
 import { queryMarketPlaceByOwner,insertMarketPlace,queryCategory } from '../tableland/tableland'
-import { PNMTADDRESS,PNMTABI,PATADDRESS,exchangeAddress,exchangeABI } from '@/components/Contracts/contracts'
+import { PNMTADDRESS,PNMTABI,PATADDRESS,PATABI,exchangeAddress,exchangeABI } from '@/components/Contracts/contracts'
 import ListTokenDialog from "@/components/ListDialog/listdialog"
 import { v4 as uuidv4 } from 'uuid';
 import { format } from 'date-fns';
@@ -79,12 +79,12 @@ useEffect(()=>{
 
     }
 
-    const _results = await getMintedERC1155TokenURIs(PNMTADDRESS,PNMTABI,owner,provider)
+    const _results = await getMintedERC1155TokenURIs(PATADDRESS,PATABI,owner,provider)
     console.log(_results)
     
     for (const [key, value] of _results.entries()) {
        console.log(value) 
-       _myobjects.push({address:PNMTADDRESS,contractName:"Print Access Token",symbol:"PAT",
+       _myobjects.push({address:PATADDRESS,contractName:"Print Access Token",symbol:"PAT",
          image:formatIPFSURL(value.tokenMetadata.image),name:value.tokenMetadata.name,description:value.tokenMetadata.description
          ,tokenId:key,category:value.tokenMetadata.category,folders:value.tokenMetadata.folders,gcode:value.tokenMetadata.gcode,material:value.tokenMetadata.name.material})
 

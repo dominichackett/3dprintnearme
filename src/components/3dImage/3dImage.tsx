@@ -7,11 +7,12 @@ import { Web3Storage, File } from "web3.storage";
 import { NFTStorage } from "nft.storage";
 import lighthouse from '@lighthouse-web3/sdk'
 import { useDropzone } from 'react-dropzone';
-import { Database } from "@tableland/sdk";
+import { Database,Registry } from "@tableland/sdk";
 import { ethers } from 'ethers';
-import { insertOrder,createPrinterTable,createCategoryTable,createMarketPlaceTable,createOrderTable,insertCategory,updateCategory } from '@/tableland/tableland';
+import { insertOrder,createPrinterTable,createCategoryTable,createMarketPlaceTable,createOrderTable,insertCategory,updateCategory, printerTable, marketPlaceTable,orderTable,categoryTable } from '@/tableland/tableland';
 import { getAuthMessage, AuthMessage, getJWT } from "@lighthouse-web3/kavach";
 import {register_job  } from '../utils/utils'
+import { UserProfilerManagerAddress } from '../Contracts/contracts';
 function classNames(...classes) {
   return classes.filter(Boolean).join(' ')
 }
@@ -119,6 +120,7 @@ input.dispatchEvent(changeEvent);
       },[])
 
     const [db,setDb] = useState()
+    const [reg,setReg] = useState()
     const uploadPercentage = useRef()  
     const {getRootProps,getInputProps,isDragActive}  = useDropzone({onDrop})
     const [folders,setFolders] = useState((props.folders ? JSON.parse(props.folders) : []))
@@ -289,7 +291,12 @@ const close = async () => {
 
     useEffect(()=>{
       if(signer) 
-        setDb(new Database({signer}))  
+      {
+        const _db =  new Database({signer})
+        setReg(new Registry(_db.config)); // Note: *must* have a signer
+        setDb(_db)  
+      }
+         
     },[signer])  
   
      // create a preview as a side effect, whenever selected file is changed
@@ -351,9 +358,15 @@ const close = async () => {
 
     const createTables = async()=>{
       if(!db)
-      return 
-      await register_job()
-      const result = await insertOrder(db,1,await signer?.getAddress(),await signer?.getAddress(),"1","router.query.item","12","2","notes")
+      return
+    
+ /*    const tx = await reg.setController({
+        controller: UserProfilerManagerAddress, // The address to send the table to
+        tableName: categoryTable, // Also accepts name as string
+      });
+      await tx.wait();*/
+    //  await register_job()
+     // const result = await insertOrder(db,1,await signer?.getAddress(),await signer?.getAddress(),"1","router.query.item","12","2","notes")
 
       //await createPrinterTable(db)
      //await createOrderTable(db)
@@ -362,7 +375,7 @@ const close = async () => {
      // await insertCategory(db,"Art & Design")
       //await insertCategory(db,"Fashion")
       //await insertCategory(db,"Gadgets")
-      //await insertCategory(db,"Sports & Outdoors")
+      await insertCategory(db,"World & Scans")
       //await updateCategory(db,4,"Sports & Outdoors")
     }
     const saveObject = async ()=> {

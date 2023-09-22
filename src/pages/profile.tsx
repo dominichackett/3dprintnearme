@@ -9,113 +9,13 @@ import { ChevronDownIcon } from '@heroicons/react/20/solid'
 import Header from '../components/Header/Header'
 import Footer from '@/components/Footer/Footer'
 
-const navigation = {
-  categories: [
-    {
-      name: 'Market Place',
-      featured: [
-        {
-          name: 'New Arrivals',
-          href: '#',
-          imageSrc: 'https://tailwindui.com/img/ecommerce-images/mega-menu-category-01.jpg',
-          imageAlt: 'Models sitting back to back, wearing Basic Tee in black and bone.',
-        },
-        {
-          name: 'Basic Tees',
-          href: '#',
-          imageSrc: 'https://tailwindui.com/img/ecommerce-images/mega-menu-category-02.jpg',
-          imageAlt: 'Close up of Basic Tee fall bundle with off-white, ochre, olive, and black tees.',
-        },
-        {
-          name: 'Accessories',
-          href: '#',
-          imageSrc: 'https://tailwindui.com/img/ecommerce-images/mega-menu-category-03.jpg',
-          imageAlt: 'Model wearing minimalist watch with black wristband and white watch face.',
-        },
-        {
-          name: 'Carry',
-          href: '#',
-          imageSrc: 'https://tailwindui.com/img/ecommerce-images/mega-menu-category-04.jpg',
-          imageAlt: 'Model opening tan leather long wallet with credit card pockets and cash pouch.',
-        },
-      ],
-    },
-    {
-      name: 'Men',
-      featured: [
-        {
-          name: 'New Arrivals',
-          href: '#',
-          imageSrc: 'https://tailwindui.com/img/ecommerce-images/mega-menu-01-men-category-01.jpg',
-          imageAlt: 'Hats and sweaters on wood shelves next to various colors of t-shirts on hangers.',
-        },
-        {
-          name: 'Basic Tees',
-          href: '#',
-          imageSrc: 'https://tailwindui.com/img/ecommerce-images/mega-menu-01-men-category-02.jpg',
-          imageAlt: 'Model wearing light heather gray t-shirt.',
-        },
-        {
-          name: 'Accessories',
-          href: '#',
-          imageSrc: 'https://tailwindui.com/img/ecommerce-images/mega-menu-01-men-category-03.jpg',
-          imageAlt:
-            'Grey 6-panel baseball hat with black brim, black mountain graphic on front, and light heather gray body.',
-        },
-        {
-          name: 'Carry',
-          href: '#',
-          imageSrc: 'https://tailwindui.com/img/ecommerce-images/mega-menu-01-men-category-04.jpg',
-          imageAlt: 'Model putting folded cash into slim card holder olive leather wallet with hand stitching.',
-        },
-      ],
-    },
-  ],
-  pages: [
-    { name: 'Company', href: '#' },
-    { name: 'Stores', href: '#' },
-  ],
-}
+import { NFTStorage } from "nft.storage";
+import Notification from '@/components/Notification/Notification'
+import { useContractRead,useSigner  } from 'wagmi'
+import { ethers } from 'ethers'
 
 
-
-  const product = {
-    name: 'Zip Tote Basket',
-    price: '$140',
-    rating: 4,
-    images: [
-      {
-        id: 1,
-        name: 'Angled view',
-        src: 'https://tailwindui.com/img/ecommerce-images/product-page-03-product-01.jpg',
-        alt: 'Angled front view with bag zipped and handles upright.',
-      },
-      // More images...
-    ],
-    colors: [
-      { name: 'Washed Black', bgColor: 'bg-gray-700', selectedColor: 'ring-gray-700' },
-      { name: 'White', bgColor: 'bg-white', selectedColor: 'ring-gray-400' },
-      { name: 'Washed Gray', bgColor: 'bg-gray-500', selectedColor: 'ring-gray-500' },
-    ],
-    description: `
-      <p>The Zip Tote Basket is the perfect midpoint between shopping tote and comfy backpack. With convertible straps, you can hand carry, should sling, or backpack this convenient and spacious bag. The zip top and durable canvas construction keeps your goods protected for all-day use.</p>
-    `,
-    details: [
-      {
-        name: 'Features',
-        items: [
-          'Multiple strap configurations',
-          'Spacious interior with top zip',
-          'Leather handle and tabs',
-          'Interior dividers',
-          'Stainless strap loops',
-          'Double stitched construction',
-          'Water-resistant',
-        ],
-      },
-      // More sections...
-    ],
-  }
+import { UserProfilerManagerAddress,UserProfilerManagerABI } from '@/components/Contracts/contracts'
   
   function classNames(...classes) {
     return classes.filter(Boolean).join(' ')
@@ -127,10 +27,27 @@ const navigation = {
 
 
 export default function Profile() {
+
   const [open, setOpen] = useState(false)
-  const [selectedColor, setSelectedColor] = useState(product.colors[0])
-  const [selectedFile, setSelectedFile] = useState()
+  const [selectedFile, setSelectedFile] = useState(undefined)
   const [preview, setPreview] = useState('')
+  const [isSaving,setIsSaving] = useState(false)
+  const [isLoading,setIsLoading]  = useState(true)
+  const [profileMetada,setProfileMetadata] = useState()
+  const { data: signer} = useSigner()
+  const [nftstorage] = useState(
+    new NFTStorage({ token: process.env.NEXT_PUBLIC_NFT_STORAGE_API_KEY})
+  );
+
+   // NOTIFICATIONS functions
+   const [notificationTitle, setNotificationTitle] = useState();
+   const [notificationDescription, setNotificationDescription] = useState();
+   const [dialogType, setDialogType] = useState(1);
+   const [show, setShow] = useState(false);
+   const close = async () => {
+     setShow(false);
+   };
+
   const onSelectFile = (e) => {
     if (!e.target.files || e.target.files.length === 0) {
         setSelectedFile(undefined)
@@ -141,6 +58,55 @@ export default function Profile() {
     setSelectedFile(e.target.files[0])
   }
 
+
+  useEffect(()=>{
+    async function getProfile(){
+
+     
+
+      const profileContract = new ethers.Contract(
+        UserProfilerManagerAddress,
+        UserProfilerManagerABI,
+        signer
+      );
+
+      try{
+            const result = await profileContract.getProfileURI(await signer.getAddress())
+            if(result !="")
+            {
+              const url = result.replace("ipfs://" ," https://nftstorage.link/ipfs/")
+              fetch(url)
+              .then((response) => response.json())
+              .then(async (data) => { 
+                console.log(data)
+                 document.getElementById("name").value = data.name
+                 document.getElementById("about").innerHTML = data.description 
+                 const imageUrl = data.image.replace("ipfs://" ," https://nftstorage.link/ipfs/")
+                 const image =  await fetch(imageUrl)
+                 if(image.ok)
+                 {
+                    
+                       setSelectedFile(await image.blob())
+                       // const objectUrl = URL.createObjectURL(await image.blob())
+                       //setPreview(objectUrl)
+                 }   
+      
+              });
+            }
+            setIsLoading(false)
+      }
+      catch(error)
+      { 
+
+        console.log(error)
+
+      }
+    }
+
+    if(signer)
+      getProfile()
+
+  },[signer])
    // create a preview as a side effect, whenever selected file is changed
  useEffect(() => {
     if (!selectedFile) {
@@ -154,6 +120,68 @@ export default function Profile() {
     // free memory when ever this component is unmounted
     return () => URL.revokeObjectURL(objectUrl)
   }, [selectedFile])
+
+
+    
+
+  const saveProfile = async(e:any)=>{
+    e.preventDefault()
+
+    const name = document.getElementById("name").value 
+    const about = document.getElementById("about").value 
+    if(about == ""  || name =="" || selectedFile == undefined)
+    {
+     setDialogType(2) //Error
+     setNotificationTitle("Save Profile.")
+     setNotificationDescription("Please enter name,description and photo.")
+     setShow(true)
+     return
+    }
+
+    setIsSaving(true)
+    setDialogType(3) //Information
+    setNotificationTitle("Uploading Profile Picture.")
+    setNotificationDescription("Saving Profile Picture.")
+    setShow(true)
+
+    const objectData = {name: name, description:about,image:selectedFile}
+    const metadata = await nftstorage.store(objectData) 
+    console.log(metadata)
+    console.log(metadata.url)
+
+
+    const profileContract = new ethers.Contract(
+      UserProfilerManagerAddress,
+      UserProfilerManagerABI,
+      signer
+    );
+
+    try{
+          const tx = await profileContract.createOrUpdateProfile(metadata.url)
+          await  tx.wait()
+
+          setDialogType(1) //Success
+          setNotificationTitle("Save Profile.")
+          setNotificationDescription("Profile Save Successfully.")
+          setShow(true)
+                   
+          setIsSaving(false)
+    }
+    catch(error)
+    { 
+       
+      setDialogType(2) //Error
+      setNotificationTitle("Save Profile.")
+      setNotificationDescription("Error Saving Profile.")
+      setShow(true)
+  
+      setIsSaving(false)
+
+    }
+
+   
+  }
+
   return (
     <div className="bg-black">
       {/* Mobile menu */}
@@ -197,42 +225,11 @@ export default function Profile() {
                 <Tab.Group as="div" className="mt-2">
                   <div className="border-b border-gray-200">
                     <Tab.List className="-mb-px flex space-x-8 px-4">
-                      {navigation.categories.map((category) => (
-                        <Tab
-                          key={category.name}
-                          className={({ selected }) =>
-                            classNames(
-                              selected ? 'border-indigo-600 text-indigo-600' : 'border-transparent text-gray-900',
-                              'flex-1 whitespace-nowrap border-b-2 px-1 py-4 text-base font-medium'
-                            )
-                          }
-                        >
-                          {category.name}
-                        </Tab>
-                      ))}
+                 
                     </Tab.List>
                   </div>
                   <Tab.Panels as={Fragment}>
-                    {navigation.categories.map((category) => (
-                      <Tab.Panel key={category.name} className="space-y-12 px-4 py-6">
-                        <div className="grid grid-cols-2 gap-x-4 gap-y-10">
-                          {category.featured.map((item) => (
-                            <div key={item.name} className="group relative">
-                              <div className="aspect-h-1 aspect-w-1 overflow-hidden rounded-md bg-gray-100 group-hover:opacity-75">
-                                <img src={item.imageSrc} alt={item.imageAlt} className="object-cover object-center" />
-                              </div>
-                              <a href={item.href} className=" block text-sm font-medium text-gray-900">
-                                <span className="absolute inset-0 z-10" aria-hidden="true" />
-                                {item.name}
-                              </a>
-                              <p aria-hidden="true" className="mt-1 text-sm text-gray-500">
-                                Shop now
-                              </p>
-                            </div>
-                          ))}
-                        </div>
-                      </Tab.Panel>
-                    ))}
+               
                   </Tab.Panels>
                 </Tab.Group>
 
@@ -253,9 +250,7 @@ export default function Profile() {
           {/* Image gallery */}
           <Tab.Group as="div" className="flex flex-col-reverse">
           
-            <Tab.Panels className="aspect-h-1 aspect-w-1 w-full">
-              {product.images.map((image) => (
-                <Tab.Panel key={image.id}>
+        
                          <div className="mb-8">
   <input
     required={!selectedFile ? true: false}
@@ -273,9 +268,7 @@ export default function Profile() {
                     </label>
 </div>
 
-                </Tab.Panel>
-              ))}
-            </Tab.Panels>
+               
           </Tab.Group>
 
           {/* Product info */}
@@ -308,19 +301,20 @@ export default function Profile() {
                   name="about"
                   rows={10}
                   className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
-                  defaultValue={''}
                 />
                   
               </div>
             </div>
-            <form className="mt-6">
+            <form className="mt-6"   onSubmit={ saveProfile}>
          
 
             
               <div className="sm:flex-col1 mt-10 flex">
                
                 <button
-                  type="submit"
+                                     disabled={isLoading || isSaving || !signer}
+
+                
                   className="flex max-w-xs flex-1 items-center justify-center rounded-md border border-transparent bg-indigo-600 px-8 py-3 text-base font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-gray-50 sm:w-full"
                 >
                   Save Profile
@@ -337,7 +331,13 @@ export default function Profile() {
         </main>
 
  <Footer />
-     
+ <Notification
+        type={dialogType}
+        show={show}
+        close={close}
+        title={notificationTitle}
+        description={notificationDescription}
+      />
     </div>
   )
 }

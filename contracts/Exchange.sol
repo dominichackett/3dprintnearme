@@ -123,10 +123,10 @@ contract Exchange is ERC721Holder, ReentrancyGuard, Ownable{
     function buyPAT(string memory _currency ,  uint256 _tokenId) external payable nonReentrant isListed(_tokenId) {
 
         
-        int256 objectPriceInUSD = int256(listings[_tokenId].price) * getPrice(listings[_tokenId].currency,'usd');
-        int256 currencyRatePerUSD = getPrice(_currency, 'usd');
-        uint256 amountToBePaid = uint256(objectPriceInUSD / currencyRatePerUSD) ; 
-        
+        //int256 objectPriceInUSD = int256(listings[_tokenId].price) * getPrice(listings[_tokenId].currency,'usd');
+        //int256 currencyRatePerUSD = getPrice(_currency, 'usd');
+       // uint256 amountToBePaid = uint256(objectPriceInUSD / currencyRatePerUSD) ; 
+         uint256 amountToBePaid = listings[_tokenId].price;
         balances[listings[_tokenId].owner][_currency] += amountToBePaid ;
         
         // assumption: contract will be deployed on Polygon network

@@ -1,4 +1,4 @@
-export const exchangeAddress='0x7302B6f27643b625fC9a8e2842F67C2464B876F9'
+export const exchangeAddress='0x4000AC183eD6cCa327b6E55e6DDAD685C4F8dfEe'
 export const exchangeABI = [
 	{
 		"inputs": [
@@ -3563,6 +3563,193 @@ export const InflationABI = [
 				"internalType": "string",
 				"name": "",
 				"type": "string"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	}
+]
+
+
+export const UserProfilerManagerAddress = '0xbB35E3437EDBBD5a9D21C78352cD7f34f9F0Bd75'
+export const UserProfilerManagerABI = [
+	{
+		"inputs": [
+			{
+				"internalType": "string",
+				"name": "_uri",
+				"type": "string"
+			}
+		],
+		"name": "createOrUpdateProfile",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "",
+				"type": "address"
+			}
+		],
+		"name": "getPolicy",
+		"outputs": [
+			{
+				"components": [
+					{
+						"internalType": "bool",
+						"name": "allowInsert",
+						"type": "bool"
+					},
+					{
+						"internalType": "bool",
+						"name": "allowUpdate",
+						"type": "bool"
+					},
+					{
+						"internalType": "bool",
+						"name": "allowDelete",
+						"type": "bool"
+					},
+					{
+						"internalType": "string",
+						"name": "whereClause",
+						"type": "string"
+					},
+					{
+						"internalType": "string",
+						"name": "withCheck",
+						"type": "string"
+					},
+					{
+						"internalType": "string[]",
+						"name": "updatableColumns",
+						"type": "string[]"
+					}
+				],
+				"internalType": "struct TablelandPolicy",
+				"name": "",
+				"type": "tuple"
+			}
+		],
+		"stateMutability": "payable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "caller",
+				"type": "address"
+			},
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"name": "getPolicy",
+		"outputs": [
+			{
+				"components": [
+					{
+						"internalType": "bool",
+						"name": "allowInsert",
+						"type": "bool"
+					},
+					{
+						"internalType": "bool",
+						"name": "allowUpdate",
+						"type": "bool"
+					},
+					{
+						"internalType": "bool",
+						"name": "allowDelete",
+						"type": "bool"
+					},
+					{
+						"internalType": "string",
+						"name": "whereClause",
+						"type": "string"
+					},
+					{
+						"internalType": "string",
+						"name": "withCheck",
+						"type": "string"
+					},
+					{
+						"internalType": "string[]",
+						"name": "updatableColumns",
+						"type": "string[]"
+					}
+				],
+				"internalType": "struct TablelandPolicy",
+				"name": "",
+				"type": "tuple"
+			}
+		],
+		"stateMutability": "payable",
+		"type": "function"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": true,
+				"internalType": "address",
+				"name": "user",
+				"type": "address"
+			},
+			{
+				"indexed": false,
+				"internalType": "string",
+				"name": "uri",
+				"type": "string"
+			}
+		],
+		"name": "UserProfileUpdated",
+		"type": "event"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "_user",
+				"type": "address"
+			}
+		],
+		"name": "getProfileURI",
+		"outputs": [
+			{
+				"internalType": "string",
+				"name": "",
+				"type": "string"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "",
+				"type": "address"
+			}
+		],
+		"name": "profiles",
+		"outputs": [
+			{
+				"internalType": "string",
+				"name": "uri",
+				"type": "string"
+			},
+			{
+				"internalType": "bool",
+				"name": "isValue",
+				"type": "bool"
 			}
 		],
 		"stateMutability": "view",

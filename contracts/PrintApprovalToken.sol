@@ -33,7 +33,7 @@ contract PrintApprovalToken is ERC1155, AccessControl, Pausable, ERC1155Burnable
 
     function mint(address account, uint256 id, uint256 amount, bytes memory data)
         public
-        onlyRole(MINTER_ROLE)
+        
     {
         _mint(account, id, amount, data);
     }

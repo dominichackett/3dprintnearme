@@ -1,62 +1,41 @@
-/// SPDX-License-Identifier: MIT
-pragma solidity ^0.8.7;
+// SPDX-License-Identifier: MIT
+pragma solidity >=0.8.0;
 
-import "@chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol";
+import "usingtellor/contracts/UsingTellor.sol";
 
-contract PriceRT {
-    //AggregatorV3Interface internal priceFeed;
+contract PriceRT is UsingTellor {
+    
+
+    // Input tellor oracle address
+    constructor(address payable _tellorAddress) UsingTellor(_tellorAddress) {}
+
+    // FVM tellor oracle 0xb2CB696fE5244fB9004877e58dcB680cB86Ba444
+
+    function getSpotPrice(string memory fst, string memory snd) public view returns(uint256) {
+
+        bytes memory queryData = abi.encode("SpotPrice", abi.encode(fst, snd));
+        bytes32 queryId = keccak256(queryData);
+        uint256 spotPrice = readSpotPrice(queryId);
+        return spotPrice;
 
 
-    mapping(string => AggregatorV3Interface) public priceFeedList;
-
-    /**
-     * Network: Sepolia
-     * Aggregator: BTC/USD
-     * Address: 0x1b44F3514812d835EB1BDB0acB33d3fA3351Ee43
-     */
-    constructor() {
-        //priceFeed = AggregatorV3Interface(
-        //    0x1b44F3514812d835EB1BDB0acB33d3fA3351Ee43
-        //);
-    }
-
-    function addPricefeed(string memory currency, AggregatorV3Interface pricefeedAddress) public {
-        priceFeedList[currency] = pricefeedAddress;
 
     }
 
-    /**
-     * Returns the latest price.
-     */
-    function getSpotPrice(string memory fst, string memory snd) public view returns (int256) {
-        // prettier-ignore
-        
-        //priceFeed = AggregatorV3Interface(
-        //    priceFeedList[fst]
-        //);
-        (
-            /* uint80 roundID */,
-            int fstPrice,
-            /*uint startedAt*/,
-            /*uint timeStamp*/,
-            /*uint80 answeredInRound*/
-        ) = AggregatorV3Interface(
-            priceFeedList[fst]).latestRoundData();
-
-        //priceFeed = AggregatorV3Interface(
-        //    priceFeedList[snd]
-        //);
-        (
-            /* uint80 roundID */,
-            int sndPrice,
-            /*uint startedAt*/,
-            /*uint timeStamp*/,
-            /*uint80 answeredInRound*/
-        ) = AggregatorV3Interface(
-            priceFeedList[snd]).latestRoundData();
-
-
-        return fstPrice/sndPrice
-;
+    function readSpotPrice(bytes32 queryId)
+        internal view returns(uint256 spotPrice)
+    {
+        // Retrieve data at least 15 minutes old to allow time for disputes
+        (bytes memory _value, uint256 _timestampRetrieved) =
+            getDataBefore(queryId, block.timestamp - 15 minutes);
+        // If timestampRetrieved is 0, no data was found
+        if(_timestampRetrieved > 0) {
+            // Check that the data is not too old
+            if(block.timestamp - _timestampRetrieved < 24 hours) {
+                // Use the helper function _sliceUint to parse the bytes to uint256
+               spotPrice = _sliceUint(_value);
+               
+            }
+        }
     }
 }

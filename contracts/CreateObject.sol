@@ -3,8 +3,9 @@ pragma solidity ^0.8.9;
 
 import '@openzeppelin/contracts/access/Ownable.sol';
 import "@openzeppelin/contracts/utils/Strings.sol";
-import './IPublicLock.sol';
 import './PrintNearMeToken.sol';
+import './interfaces/IAggregatorOracle.sol';
+//Lighthouse Smart Contract : 0x6ec8722e6543fB5976a547434c8644b51e24785b
 
 
 
@@ -13,13 +14,10 @@ contract CreateObject is Ownable {
 
 
     PrintNearMeToken public PNMT;
-    IPublicLock public lock;
-
-        
+    IAggregatorOracle public dealStatus;
+      
     
     uint objectCount;
-   
-
     struct NewObject {
         uint id;
         address creator;
@@ -27,20 +25,24 @@ contract CreateObject is Ownable {
         string objectDetails;
         string location;
         string status;
+        uint transactionId;
         
     }
 
 
     mapping (string => NewObject) public objectList;
 
-    constructor(address _PNMTAddress) {
+    constructor(address _PNMTAddress, address _dealStatus) {
         PNMT = PrintNearMeToken(_PNMTAddress);
+        dealStatus = IAggregatorOracle(_dealStatus);
     }
 
     event ObjectCreation(
         uint indexed id,
         address indexed creator,
-        string indexed name,
+        uint indexed transactionId,
+        bytes cid,
+        string objName,
         string details,
         string location
     );
@@ -62,17 +64,14 @@ contract CreateObject is Ownable {
     
     }
 
-    function setLockAddress(address _lockAddress) public  onlyOwner {
-        lock = IPublicLock(_lockAddress);
-    
-    }
+    function mintNewObject(string memory uri, bytes memory _cid, string memory _objectName, string memory _objectDetails, string memory _location) public {
 
-    function mintNewObject(string memory uri, string memory _objectName, string memory _objectDetails, string memory _location) public {
-
-        require(lock.balanceOf(msg.sender) > 0, 'Not a Member');
         objectCount = objectCount + 1;
-        objectList[_objectName] = NewObject(objectCount, msg.sender,_objectName, _objectDetails, _location, "Created");        
-        PNMT.safeMint( msg.sender, objectCount, uri);    
+               
+        PNMT.safeMint( msg.sender, uri);    
+        uint transactionId = dealStatus.submit(_cid);
+        objectList[_objectName] = NewObject(objectCount, msg.sender,_objectName, _objectDetails, _location, "Created", transactionId);
+        emit ObjectCreation(objectCount, msg.sender, transactionId, _cid,_objectName, _objectDetails, _location);
 
     }
 

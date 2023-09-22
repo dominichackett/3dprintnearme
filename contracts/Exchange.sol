@@ -10,6 +10,9 @@ import './PrintNearMeToken.sol';
 import "@openzeppelin/contracts/token/ERC721/utils/ERC721Holder.sol";
 import "./PriceRT.sol";
 import "./PrintApprovalToken.sol";
+import "./MinerPass.sol";
+import './interfaces/IAggregatorOracle.sol';
+//Lighthouse Smart Contract : 0x6ec8722e6543fB5976a547434c8644b51e24785b
 
 
 error ItemNotForSale(uint256 tokenId);
@@ -25,6 +28,8 @@ contract Exchange is ERC721Holder, ReentrancyGuard, Ownable{
     PrintNearMeToken public PNMT ; //PNMT;
     PriceRT public priceRT;
     PrintApprovalToken public PAT;
+    MinerPass public MP;
+    IAggregatorOracle public aggregator;
 
 
     struct ListObject{        
@@ -32,8 +37,23 @@ contract Exchange is ERC721Holder, ReentrancyGuard, Ownable{
         uint mintedQuantity;
         uint price;
         string currency;
+        uint royaltyPercent;
     }
 
+    struct CidMap {
+        uint tokenId;
+        uint earnings;
+    }
+
+    struct tokenDetails {
+        bytes cid;
+        uint64 dealId;
+        uint64 minerId;
+    }
+
+    mapping(uint => tokenDetails) public tokenDeals;
+    mapping(bytes => CidMap) public cidMapping;
+    mapping(uint64 => address) public minerAddress;
     mapping(uint256 => ListObject) public listings;
     mapping(string => address) public tokenList;
     mapping(address => mapping(string => uint)) public balances;
@@ -104,16 +124,48 @@ contract Exchange is ERC721Holder, ReentrancyGuard, Ownable{
     
     }
 
-    function getPrice(string memory fst, string memory snd) public view returns(int256) {
-        return priceRT.getSpotPrice(fst, snd);
+    function setMinerPassAddress(address _MPAddress) public  onlyOwner {
+        MP = MinerPass(_MPAddress);
     
     }
 
+    function setAggregatorAddress(address _aggregator) public  onlyOwner {
+        aggregator = IAggregatorOracle(_aggregator);
+    
+    }
 
-    function listPrintNearMeToken(uint256 _tokenId, uint256 _price, string memory _currency) external nonReentrant notListed(_tokenId) isOwner(_tokenId, msg.sender) {
+    function getPrice(string memory fst, string memory snd) public view returns(int256) {
+       int256 spotPrice = int256(priceRT.getSpotPrice(fst, snd));
+       return spotPrice;
+    
+    }
 
-        require(tokenList[_currency] != address(0), "Currency Not defined");   
-        listings[_tokenId] = ListObject( msg.sender , 0, _price, _currency ); 
+    function getDealDetails(bytes memory _cid , uint256 _tokenId) public  {
+
+        uint64 _dealId;
+        uint64 _minerId;
+
+        IAggregatorOracle.Deal[] memory deals = aggregator.getActiveDeals(_cid);
+        _dealId = deals[0].dealId;
+        _minerId = deals[0].minerId;
+        tokenDeals[_tokenId] = tokenDetails(_cid, _dealId, _minerId);
+
+
+    }
+
+    function addMinerAddress(uint64 _minerId) public {
+
+        require(MP.balanceOf(msg.sender)> 0, "No Miner Pass");
+        minerAddress[_minerId] = msg.sender;
+
+    }
+
+
+    function listPrintNearMeToken(uint256 _tokenId, uint256 _price, string memory _currency, uint _minerRoyalty) external nonReentrant notListed(_tokenId) isOwner(_tokenId, msg.sender) {
+
+        require(tokenList[_currency] != address(0), "Currency Not defined");  
+        require(tokenDeals[_tokenId].dealId !=0, "No Deal exist"); 
+        listings[_tokenId] = ListObject( msg.sender , 0, _price, _currency , _minerRoyalty); 
         PNMT.safeTransferFrom(msg.sender, address(this), _tokenId);
 
         emit Listed(msg.sender, _tokenId, _price, _currency );
@@ -125,13 +177,17 @@ contract Exchange is ERC721Holder, ReentrancyGuard, Ownable{
         
         int256 objectPriceInUSD = int256(listings[_tokenId].price) * getPrice(listings[_tokenId].currency,'usd');
         int256 currencyRatePerUSD = getPrice(_currency, 'usd');
-        uint256 amountToBePaid = uint256(objectPriceInUSD / currencyRatePerUSD) ; 
+        uint256 amountToBePaid = uint256(objectPriceInUSD / currencyRatePerUSD); 
         
-        balances[listings[_tokenId].owner][_currency] += amountToBePaid ;
-        
-        // assumption: contract will be deployed on Polygon network
+        balances[listings[_tokenId].owner][_currency] += amountToBePaid * (100 - listings[_tokenId].royaltyPercent) / 100 ;
+        balances[minerAddress[tokenDeals[_tokenId].minerId]][_currency] += amountToBePaid * listings[_tokenId].royaltyPercent /100;
+        cidMapping[tokenDeals[_tokenId].cid].earnings +=  amountToBePaid * listings[_tokenId].royaltyPercent /100;
 
-        if (keccak256(abi.encodePacked((_currency))) == keccak256(abi.encodePacked(('matic')))) {
+
+        
+        // assumption: contract will be deployed on Filecoin network
+
+        if (keccak256(abi.encodePacked((_currency))) == keccak256(abi.encodePacked(('fil')))) {
 
             require( msg.value  >= amountToBePaid , "Insufficient Amount");
 

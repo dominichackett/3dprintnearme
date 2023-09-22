@@ -29,8 +29,9 @@ contract PrintNearMeToken is ERC721, ERC721URIStorage, Pausable, AccessControl, 
         _unpause();
     }
 
-    function safeMint(address to, uint256 tokenId, string memory uri) public onlyRole(MINTER_ROLE) {
-        
+    function safeMint(address to,  string memory uri) public  {
+
+        uint256 tokenId = _tokenIdCounter.current();        
         _tokenIdCounter.increment();
         _safeMint(to, tokenId);
         _setTokenURI(tokenId, uri);
@@ -62,7 +63,7 @@ contract PrintNearMeToken is ERC721, ERC721URIStorage, Pausable, AccessControl, 
     function supportsInterface(bytes4 interfaceId)
         public
         view
-        override(ERC721,ERC721URIStorage, AccessControl)
+        override(ERC721, ERC721URIStorage, AccessControl)
         returns (bool)
     {
         return super.supportsInterface(interfaceId);

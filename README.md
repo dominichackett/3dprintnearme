@@ -42,7 +42,7 @@ By harnessing the capabilities of these advanced technologies, 3D Print Near Me 
 
 ## Demo Video
 
-![IMAGE ALT TEXT HERE](https://github.com/dominichackett/3dprintnearme/blob/opendatahack/images/home.png)]https://www.youtube.com/watch?v=eDzqQalvaJo&feature=youtu.be
+![IMAGE ALT TEXT HERE](https://github.com/dominichackett/3dprintnearme/blob/opendatahack/images/home.png)https://www.youtube.com/watch?v=eDzqQalvaJo&feature=youtu.be
 
 ## Screenshots
 

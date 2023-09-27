@@ -9,7 +9,7 @@ import lighthouse from '@lighthouse-web3/sdk'
 import { useDropzone } from 'react-dropzone';
 import { Database,Registry } from "@tableland/sdk";
 import { ethers } from 'ethers';
-import { insertOrder,createPrinterTable,createCategoryTable,createMarketPlaceTable,createOrderTable,insertCategory,updateCategory, printerTable, marketPlaceTable,orderTable,categoryTable } from '@/tableland/tableland';
+import { deleteAll,insertOrder,createPrinterTable,createCategoryTable,createMarketPlaceTable,createOrderTable,insertCategory,updateCategory, printerTable, marketPlaceTable,orderTable,categoryTable } from '@/tableland/tableland';
 import { getAuthMessage, AuthMessage, getJWT } from "@lighthouse-web3/kavach";
 import {register_job  } from '../utils/utils'
 import { UserProfilerManagerAddress } from '../Contracts/contracts';
@@ -370,8 +370,8 @@ const close = async () => {
       await tx.wait();*/
      //await register_job()
      // const result = await insertOrder(db,1,await signer?.getAddress(),await signer?.getAddress(),"1","router.query.item","12","2","notes")
-     const response = await axios.get("https://bafyreigmzj5wsk3qiaezwda7gs5maht7rcn4xsbdispabgfodv3ajl6hxy.ipfs.nftstorage.link/metadata.json");
-     console.log(response)
+   //  const response = await axios.get("https://bafyreigmzj5wsk3qiaezwda7gs5maht7rcn4xsbdispabgfodv3ajl6hxy.ipfs.nftstorage.link/metadata.json");
+     //console.log(response)
       //await createPrinterTable(db)
      //await createOrderTable(db)
      // await createMarketPlaceTable(db)
@@ -381,6 +381,7 @@ const close = async () => {
       //await insertCategory(db,"Gadgets")
       //await insertCategory(db,"World & Scans")
       //await updateCategory(db,4,"Sports & Outdoors")
+      await deleteAll(db)
     }
     const saveObject = async ()=> {
 
@@ -729,12 +730,12 @@ catch(error)
    </div> }      
    <div className="sm:flex-col1 mt-4 flex">
     
-{1!=1 && <button
+ {1!=1 && <button
      onClick={()=>createTables()}
       className=" flex max-w-xs flex-1 items-center justify-center rounded-md border border-transparent bg-indigo-600 px-8 py-3 text-base font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-gray-50 sm:w-full"
     >
       Create Tableland Tables 
-    </button> }
+    </button>} 
 
 
 </div>       

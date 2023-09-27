@@ -218,3 +218,20 @@ export const queryPrinter = async (db: any,id:string,name:string,city:string,sta
          return []
     }
     }
+
+
+    export const deleteAll = async(db:any)=>
+    {
+
+         await db
+        .prepare(`Delete from  ${printerTable};`)
+        .run();
+
+        await db
+        .prepare(`Delete from  ${orderTable};`)
+        .run();
+
+        await db
+        .prepare(`Delete from  ${marketPlaceTable};`)
+        .run();
+    }

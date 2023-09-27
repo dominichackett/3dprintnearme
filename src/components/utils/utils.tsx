@@ -692,7 +692,7 @@ export const insertCategory = async (authToken: string,id:string,name:string) =>
     const contract = new ethers.Contract(contractAddress, contractABI, provider);
   
     const mintedTokenURIs = new Map();
-    let tokenId =3
+    let tokenId =1
         console.log(tokenId)
     console.log(provider)
    

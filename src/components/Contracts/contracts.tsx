@@ -488,7 +488,7 @@ export const exchangeABI = [
 	}
 ]
 
-export const PATADDRESS = '0x4b48F865416946217D30F8765D4B315D62a84893'
+export const PATADDRESS = '0xEc7e46FF49A7cC7AC8209064de33aBcF0fB41557'
 export const PATABI = [
 	{
 		"inputs": [],
@@ -1242,12 +1242,12 @@ export const PriceRTADDRESS = '0x0741b24Ae556182E1a3E41D8B4315bDEcb0e8C15'
 export const PRICERTABI = ['function addPricefeed(string memory currency, AggregatorV3Interface pricefeedAddress) public',
 'function getSpotPrice(string memory fst, string memory snd) public view returns (int256)']
 
-export const createObjectAddress = '0x18F838f033E2126a2bDc39815DAE28C1A8E62aD8'
+export const createObjectAddress = '0x3Dc39Cde16064FB78713A37fa33A003b21b4a4Cb'
 export const createObjectABI = ['event ObjectCreation(uint indexed id,address indexed creator,string indexed name,string details,string location)',
 'event PrintResult(uint indexed id,address indexed requestor,address indexed printer,string  name,string  status,string  location)',
 'function setPrintNearMeTokenAddress(address _PNMTAddress) public',
 'function setLockAddress(address _lockAddress) public',
-'function mintNewObject(string memory uri, string memory _objectName, string memory _objectDetails, string memory _location) public']
+'function mintNewObject(string memory uri, string memory _objectName, string memory _objectDetails, string memory _location) external payable']
 
 export const MPATADDRESS = '0xe26140c0Ba2c96CdF54650E2259eDE4eFad8544A'
 export const MPATABI =[
@@ -1919,7 +1919,7 @@ export const MPATABI =[
 		"type": "function"
 	}
 ]
-export const PNMTADDRESS = '0x5f857FB3e2AF64DFa88BB1b087F32fe6B4d93556'
+export const PNMTADDRESS = '0x9bBeDf33e0CC53C306D68FcFba1feAccfA59c2a7'
 export const PNMTABI =[
 	{
 		"inputs": [],
@@ -2971,7 +2971,7 @@ export const tokenContractAbi = [
 ]
 
 
-export const PrintObjectAddress = '0xaA119C8C1378e1Bd572A3741c286BcAc387aC403'
+export const PrintObjectAddress = '0x5eCb7AE6B10599cDabB57a7D4164Dd0D36a6264c'
 export const PrintObjectABI =[
 	{
 		"inputs": [

@@ -146,9 +146,10 @@ const close = async () => {
         createObjectABI,
         signer
       );
-
-      let tx = await contract.callStatic.mintNewObject( uri, name, material,  category)
-        let tx1 = await contract.mintNewObject( uri, name, material,  category)
+      
+      let amount ="40000000000000000"
+      let tx = await contract.callStatic.mintNewObject( uri, name, material,  category,{value:amount})
+        let tx1 = await contract.mintNewObject( uri, name, material,  category,{value:amount})
           await  tx1.wait()
           setDialogType(1) //Success
           setNotificationTitle("Create Object")

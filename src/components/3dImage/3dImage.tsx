@@ -13,6 +13,7 @@ import { insertOrder,createPrinterTable,createCategoryTable,createMarketPlaceTab
 import { getAuthMessage, AuthMessage, getJWT } from "@lighthouse-web3/kavach";
 import {register_job  } from '../utils/utils'
 import { UserProfilerManagerAddress } from '../Contracts/contracts';
+import axios from 'axios';
 function classNames(...classes) {
   return classes.filter(Boolean).join(' ')
 }
@@ -178,6 +179,8 @@ const close = async () => {
   useEffect(()=>{
    async function getFiles()
    {
+
+
 
       const wallet = new ethers.Wallet(process.env.NEXT_PUBLIC_MarketPlace_PRIVATE_KEY)
       const authMessage: AuthMessage = await getAuthMessage(wallet.address);
@@ -365,9 +368,10 @@ const close = async () => {
         tableName: categoryTable, // Also accepts name as string
       });
       await tx.wait();*/
-    //  await register_job()
+     //await register_job()
      // const result = await insertOrder(db,1,await signer?.getAddress(),await signer?.getAddress(),"1","router.query.item","12","2","notes")
-
+     const response = await axios.get("https://bafyreigmzj5wsk3qiaezwda7gs5maht7rcn4xsbdispabgfodv3ajl6hxy.ipfs.nftstorage.link/metadata.json");
+     console.log(response)
       //await createPrinterTable(db)
      //await createOrderTable(db)
      // await createMarketPlaceTable(db)
@@ -375,7 +379,7 @@ const close = async () => {
      // await insertCategory(db,"Art & Design")
       //await insertCategory(db,"Fashion")
       //await insertCategory(db,"Gadgets")
-      await insertCategory(db,"World & Scans")
+      //await insertCategory(db,"World & Scans")
       //await updateCategory(db,4,"Sports & Outdoors")
     }
     const saveObject = async ()=> {
@@ -411,7 +415,7 @@ const close = async () => {
 
         setDialogType(3) //Info
         setNotificationTitle("File Uploading")
-        setNotificationDescription(`Uploading Files ${uploadPercentage.current}%`)
+        setNotificationDescription(`Uploading Files`)
         setShow(true)  
       //Upload file to web3.storage
    // const cid = await storage.put([new File([selectedGCODEFile],filename.current)]);
@@ -725,12 +729,12 @@ catch(error)
    </div> }      
    <div className="sm:flex-col1 mt-4 flex">
     
-    <button
+{1!=1 && <button
      onClick={()=>createTables()}
       className=" flex max-w-xs flex-1 items-center justify-center rounded-md border border-transparent bg-indigo-600 px-8 py-3 text-base font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-gray-50 sm:w-full"
     >
       Create Tableland Tables 
-    </button>
+    </button> }
 
 
 </div>       
@@ -760,30 +764,20 @@ catch(error)
   <div  className="p-10 cursor-pointer h-[480px] rounded-lg border border-dashed border-[#A1A0AE] bg-[#353444] ">
  
   <div className="grid grid-cols-2 gap-4">
-  <div className="bg-gray-300 p-6 text-center">
+  <div className="bg-gray-300 p-16 text-center">
     <div className="text-xl font-bold">Print Time</div>
-    <div>{printTime}hours</div>
+    <div>{props?.printTime} hours</div>
   </div>
-  <div className="bg-gray-400 p-6 text-center">
-    <div className="text-xl font-bold">Size</div>
-    <div>{size}</div>
-  </div>
-  <div className="bg-gray-300 p-6 text-center">
+
+  <div className="bg-gray-300 p-16 text-center">
     <div className="text-xl font-bold">Filament</div>
-    <div>{filament}mm</div>
+    <div>{props?.filament} mm</div>
   </div>
-  <div className="bg-gray-400 p-6 text-center">
+  <div className="bg-gray-400 p-16 text-center">
     <div className="text-xl font-bold">Weight</div>
-    <div>{weight}g</div>
+    <div>{props?.weight} g</div>
   </div>
-  <div className="bg-gray-300 p-6 text-center">
-    <div className="text-xl font-bold">Height</div>
-    <div>{height}mm</div>
-  </div>
-  <div className="bg-gray-400 p-6 text-center">
-    <div className="text-xl font-bold">Layers</div>
-    <div>{layerCount}</div>
-  </div>
+ 
  
 </div>
 

@@ -2,7 +2,7 @@ export const printerTable = 'printnearme_printer_314159_290'
 export const marketPlaceTable = 'printnearme_marketplace_314159_275'
 export const categoryTable = 'printnearme_category_314159_265'
 export const orderTable = 'printnearme_order_314159_312'
-
+export const printTimeTable = 'printnearme_printtime_314159_381'
 
 export const createCategoryTable = async(db:any)=>
 {
@@ -66,7 +66,7 @@ const { meta: insert } = await db
 .run();
 
 // Wait for transaction finality
-await insert.txn?.wait();
+//await insert.txn?.wait();
 }
 
 
@@ -78,7 +78,7 @@ const { meta: update } = await db
 .run();
 
 // Wait for transaction finality
-await update.txn?.wait();
+//await update.txn?.wait();
 }
 
 export const insertPrinter =async (db:any,id:string,name:string,rate:string,city:string,state:string,country:string,zip:string,materials:string,info:string,url:string) => {
@@ -89,7 +89,7 @@ const { meta: insert } = await db
 .run();
 
 // Wait for transaction finality
-await insert.txn?.wait();
+//await insert.txn?.wait();
 }
 
 export const insertMarketPlace = async(db:any,itemid:string,price:string,datelisted:number,owner:string,category:number)=>{
@@ -99,7 +99,7 @@ export const insertMarketPlace = async(db:any,itemid:string,price:string,datelis
     .run();
 
     // Wait for transaction finality
-    await insert.txn?.wait();
+    //await insert.txn?.wait();
 }
 
 export const insertOrder = async (db:any,dateplaced:number,owner:string,printer:string,tokenid:string,item:string,filamentcost:string,hourlycost:string,notes:string)=>{
@@ -109,7 +109,7 @@ export const insertOrder = async (db:any,dateplaced:number,owner:string,printer:
     .run();
     
     // Wait for transaction finality
-    await insert.txn?.wait();
+    //await insert.txn?.wait();
 }
 
 export const updatePrinter = async (db:any,id:string,name:string,rate:string,city:string,state:string,country:string,zip:string,materials:string,info:string,url:string) => {    
@@ -132,7 +132,7 @@ export const updateOrderStatus = async (db:any,id:number,status:number)=>{
     .run();
     
     // Wait for transaction finality
-    await update.txn?.wait();
+   // await update.txn?.wait();
 }
 
 export const updateOrder = async (db:any,id:number,item:number)=>{
@@ -142,7 +142,7 @@ export const updateOrder = async (db:any,id:number,item:number)=>{
     .run();
     
     // Wait for transaction finality
-    await update.txn?.wait();
+  //  await update.txn?.wait();
 }
 
 export const queryCategory = async(db:any)=>{
@@ -207,3 +207,14 @@ export const queryPrinter = async (db: any,id:string,name:string,city:string,sta
 
     };
 
+    export const queryPrintTime = async(db:any,id:string)=>{
+
+        try {const { results } = await db.prepare(`SELECT * FROM ${printTimeTable} where id='${id}' ;`).all();
+    
+       return results;
+    } catch(error)
+    {
+         console.log(error)
+         return []
+    }
+    }

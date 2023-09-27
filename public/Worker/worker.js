@@ -714,9 +714,8 @@ var analyzeModel = function(){
 //            console.log(model);
   }
 
-  const loadFile =  function(reader){
+  const loadFile =  function(reader ){
                   
-
        model = [];
       z_heights = [];
       gcode = undefined;

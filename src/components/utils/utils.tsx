@@ -660,6 +660,18 @@ export const insertCategory = async (authToken: string,id:string,name:string) =>
     }
   };
 
+
+  
+
+  export  function formatNFTSTORAGEURL(url: string): string {
+    if(url.includes(".ipfs.w3s.link/"))
+      return url
+  
+    const formattedURL = url
+        .replace('ipfs://', 'https://nftstorage.link/ipfs/')    
+      return formattedURL;
+    }
+
   export  function formatIPFSURL(url: string): string {
     if(url.includes(".ipfs.w3s.link/"))
       return url
@@ -680,24 +692,27 @@ export const insertCategory = async (authToken: string,id:string,name:string) =>
     const contract = new ethers.Contract(contractAddress, contractABI, provider);
   
     const mintedTokenURIs = new Map();
-    let tokenId = 1;
-    console.log(tokenId)
+    let tokenId =3
+        console.log(tokenId)
     console.log(provider)
-  
+   
+
     while (true) {
       try {
         const tokenURI = await contract.tokenURI(tokenId);
         // Here you might want to validate the tokenURI to ensure it's not an error message
-        if (tokenURI !== 'Family' && tokenURI!= 'uri' ) {
+        if (tokenURI !== 'Family' && tokenURI!= 'uri' && tokenURI != undefined) {
           const owner = await contract.ownerOf( tokenId);
           if (owner == userAddress) {
-
-            const metadataurl =formatIPFSURL(tokenURI)
+           console.log(`Token uri ${tokenURI}`)
+            const metadataurl =formatNFTSTORAGEURL(tokenURI)
             console.log(metadataurl)
              // Use Axios to fetch the token metadata
-          const response = await axios.get(metadataurl);
+          const response = await axios.get(`${process.env.NEXT_PUBLIC_HOST_URL}/api/getMetadata?url=${metadataurl}`);
+          
           const tokenMetadata = response.data; // Assuming the response contains JSON metadata
-         console.log(tokenMetadata)
+         console.log(response)
+          if(tokenMetadata)
             mintedTokenURIs.set(tokenId, {tokenURI,tokenMetadata});
           }
         }
@@ -794,7 +809,7 @@ export async function getFileFromStaturn(url:string) {
 
 export async function register_job() {
   const formData = new FormData();
-  const cid = "QmTgLAp2Ze2bv7WV2wnZrvtpR5pKJxZ2vtBxZPwr7rM61a"
+  const cid = "0x4855a24f437e3e9e50c9d74610607bbefab15fe2e622792d12e3414464e90c14"
   const requestReceivedTime = new Date()
   const endDate = requestReceivedTime.setMonth(requestReceivedTime.getMonth() + 1)
   const replicationTarget = 2

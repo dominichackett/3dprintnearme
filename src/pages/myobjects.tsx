@@ -15,7 +15,7 @@ import ListTokenDialog from "@/components/ListDialog/listdialog"
 import { v4 as uuidv4 } from 'uuid';
 import { format } from 'date-fns';
 import { useRouter } from "next/router";
-import { getMintedTokenURIs ,formatIPFSURL,getMintedERC1155TokenURIs} from '@/components/utils/utils'
+import { getMintedTokenURIs ,formatIPFSURL,getMintedERC1155TokenURIs,formatNFTSTORAGEURL} from '@/components/utils/utils'
 import { Database } from "@tableland/sdk";
 
   function classNames(...classes) {
@@ -73,6 +73,7 @@ useEffect(()=>{
 
      for (const [key, value] of results.entries()) {
         console.log(value) 
+        console.log(formatIPFSURL(value.tokenMetadata.image))
         _myobjects.push({address:PNMTADDRESS,contractName:"Print Near Me",symbol:"PNMT",
           image:formatIPFSURL(value.tokenMetadata.image),name:value.tokenMetadata.name,description:value.tokenMetadata.description
           ,tokenId:key,category:value.tokenMetadata.category,folders:value.tokenMetadata.folders,gcode:value.tokenMetadata.gcode,material:value.tokenMetadata.material})
@@ -86,7 +87,7 @@ useEffect(()=>{
        console.log(value) 
        _myobjects.push({address:PATADDRESS,contractName:"Print Access Token",symbol:"PAT",
          image:formatIPFSURL(value.tokenMetadata.image),name:value.tokenMetadata.name,description:value.tokenMetadata.description
-         ,tokenId:key,category:value.tokenMetadata.category,folders:value.tokenMetadata.folders,gcode:value.tokenMetadata.gcode,material:value.tokenMetadata.name.material})
+         ,tokenId:key,category:value.tokenMetadata.category,folders:value.tokenMetadata.folders,gcode:value.tokenMetadata.gcode,material:value.tokenMetadata.material})
 
    }
 

@@ -89,7 +89,7 @@ const close = async () => {
     const paymentTokenName  =  document.getElementById("payment")?.selectedOptions[0].textContent
     let amount = ethers.utils.parseUnits(price.toString(),18)
 
-   alert(paymentTokenAddress)
+//   alert(paymentTokenAddress)
 
     const tokenContract = new ethers.Contract(
       paymentTokenAddress,
@@ -107,7 +107,6 @@ const close = async () => {
 
     if(paymentTokenAddress!=0)
     {
-      alert(2)
    let tx = await tokenContract.callStatic.approve(exchangeAddress ,amount)
       console.log(tx)
     
@@ -128,7 +127,6 @@ const close = async () => {
      {
 
       console.log(amount)
-      alert(itemId)
       let tx5 = await exchangeContract.callStatic.buyPAT(paymentTokenName ,itemId,{
        gasLimit: 3000000,value:amount})
       

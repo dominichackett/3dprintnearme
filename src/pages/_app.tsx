@@ -69,10 +69,10 @@ const zkEVM :Chain = {
     },
     rpcUrls: {
       default: {
-        http: ['https://rpc.ankr.com/filecoin_testnet']
+        http: ['https://api.calibration.node.glif.io/rpc/v1']
       },
       public: {
-        http: ['https://rpc.ankr.com/filecoin_testnet']
+        http: ['https://api.calibration.node.glif.io/rpc/v1']
       },
     },
    

@@ -15,9 +15,7 @@ import {ethers} from 'ethers'
 import { useSigner  } from 'wagmi'
 import { v4 as uuidv4 } from 'uuid';
 import { format } from 'date-fns';
-import { insertOrder } from '@/tableland/tableland'
-import { TokenContext } from '@/components/Context/spacetime';
-import { getFileFromStaturn } from '@/components/utils/utils'
+import { insertOrder ,queryPrintTime} from '@/tableland/tableland'
 import { Database } from "@tableland/sdk";
 
 const materials = [
@@ -50,6 +48,7 @@ export default function PrintItem() {
   const [printCost,setPrintCost] = useState(0)
   const [filamentCost,setFilamentCost] = useState(0)
   const [filament,setFilament] = useState(0)
+  const [weight,setWeight] = useState(0)
   const [printTime,setPrintTime] = useState(0)
   const [db,setDb] = useState()
 
@@ -62,7 +61,6 @@ export default function PrintItem() {
   const [printer,setPrinter] = useState(null)
   const router = useRouter()
   const { data: signer} = useSigner()
-  const { accessToken } = useContext(TokenContext);
 
   const imagePanelRef = useRef<ImagePanelRef>(null)
   const printerSearchRef = useRef<PrinterSearchRef>(null)
@@ -81,15 +79,34 @@ const close = async () => {
   }
 
   const printerCallBack = (_printer:any) =>{
-      
+      console.log(printer)
       setPrinter(_printer)
-      setHourlyPrice(_printer.rate)
-      setFilamentPrice(_printer.MATERIALS.get(material))
-      setPrintCost((printTime*_printer.rate))
-      setFilamentCost((filament*_printer.MATERIALS.get(material)))
+      setHourlyPrice(parseFloat(_printer.rate))
+      setFilamentPrice(parseFloat(_printer.MATERIALS.get(material)))
+      setPrintCost((printTime*parseFloat(_printer.rate)))
+      setFilamentCost((filament*parseFloat(_printer.MATERIALS.get(material))/1000))
 
   }
+ useEffect(()=>{
+   async function getPrintTime()
+   {
+      const result = await queryPrintTime(db,itemId)
+      console.log(result)
+      if(result.length > 0 )
+      {
+        setPrintTime((parseFloat(result[0].printTime)/3600).toFixed(2))
+        setFilament(parseFloat(result[0].totalFilament).toFixed(2))
+        setWeight(parseFloat(result[0].totalWeight).toFixed(2))
+       
+ 
+        setPrintCost(((parseFloat(result[0].printTime)/3600).toFixed(2)*hourlyPrice))
+         setFilamentCost((parseFloat(result[0].totalFilament).toFixed(2)*(filamentPrice/1000)))
+      }
+   }
 
+   if(db)
+     getPrintTime()
+ },[db])
   useEffect(()=>{
     if(signer) 
       setDb(new Database({signer}))  
@@ -180,7 +197,7 @@ const printItem = async()=>
           let tx3 = await printContract.printObject(itemId,printer.name,"usd" ,amount)
      
         await  tx3.wait()
-        const result = await insertOrder(db,date.getTime(),await signer?.getAddress(),printer.id,itemId,router.query.item,filamentCost.toFixed(2),printCost,notes)
+        const result = await insertOrder(db,date.getTime(),await signer?.getAddress(),printer.id,itemId,router.query.item,filamentCost.toFixed(2).toString(),printCost.toFixed(2).toString(),notes)
 
         setDialogType(1) //Success
         setNotificationTitle("Send to Printer")
@@ -273,7 +290,7 @@ const printItem = async()=>
             <Tab.Panels className="aspect-h-1 aspect-w-1 w-full">
              
                 <Tab.Panel >
-               {itemId && <ImagePanel setPrintData={setPrintData} id={itemId} image={imageFile} gcode={gcodeFile} folders={folders}/>}
+               {itemId && <ImagePanel setPrintData={setPrintData} id={itemId} image={imageFile} gcode={gcodeFile} folders={folders} weight={weight} filament={filament} printTime={printTime}/>}
 
                 </Tab.Panel>
             </Tab.Panels>

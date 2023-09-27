@@ -14,7 +14,7 @@ import {ethers} from 'ethers'
 import { useSigner  } from 'wagmi'
 import { v4 as uuidv4 } from 'uuid';
 import { format } from 'date-fns';
-import { queryPrinter } from '@/tableland/tableland'
+import { queryPrinter ,queryPrintTime} from '@/tableland/tableland'
 import { TokenContext } from '@/components/Context/spacetime';
 import { Database } from "@tableland/sdk";
 
@@ -47,6 +47,8 @@ export default function Printer() {
   const [hourlyPrice,setHourlyPrice] = useState(0)
   const [printCost,setPrintCost] = useState(0)
   const [filamentCost,setFilamentCost] = useState(0)
+  const [weight,setWeight] = useState(0)
+
   const [filament,setFilament] = useState(0)
   const [printTime,setPrintTime] = useState(0)
   const [folders,setFolders] = useState()
@@ -79,15 +81,34 @@ const close = async () => {
 
    }
    function printerCallBack  (_printer:any) {
-   
+      console.log(_printer)
       setPrinter(_printer)
-      setHourlyPrice(_printer.rate)
-      setFilamentPrice(_printer.materials.get(material))
-      setPrintCost((printTime*_printer.rate))
-      setFilamentCost((filament*_printer.materials.get(material)))
+      setHourlyPrice(parseFloat(_printer.rate))
+      setFilamentPrice(parseFloat(_printer.materials.get(material)))
+      setPrintCost((printTime*parseFloat(_printer.rate)))
+      setFilamentCost((filament*parseFloat(_printer.materials.get(material))/1000))
 
   }
-
+  useEffect(()=>{
+    async function getPrintTime()
+    {
+       const result = await queryPrintTime(db,itemId)
+       console.log(result)
+       if(result.length > 0 )
+       {
+         setPrintTime((parseFloat(result[0].printTime)/3600).toFixed(2))
+         setFilament(parseFloat(result[0].totalFilament).toFixed(2))
+         setWeight(parseFloat(result[0].totalWeight).toFixed(2))
+        
+  
+         setPrintCost(((parseFloat(result[0].printTime)/3600).toFixed(2)*hourlyPrice))
+          setFilamentCost((parseFloat(result[0].totalFilament).toFixed(2)*(filamentPrice/1000)))
+       }
+    }
+ 
+    if(db && itemId && printer)
+      getPrintTime()
+  },[db,itemId,printer])
 
   useEffect(()=>{
     if(signer) 
@@ -196,6 +217,9 @@ const printItem = async()=>{
         setNotificationDescription("Print job started.")
         setShow(true)
     } catch (error) {
+
+      
+     
       setDialogType(2) //Error
       setNotificationTitle("Print")
       setNotificationDescription(`Error printing job.  ${error}` )
@@ -269,7 +293,7 @@ const printItem = async()=>{
             <Tab.Panels className="aspect-h-1 aspect-w-1 w-full">
              
                 <Tab.Panel >
-               {itemId && <ImagePanel setPrintData={setPrintData} id={itemId} image={imageFile} gcode={gcodeFile} folders={folders} setFile={setFile}/>}
+               {itemId && <ImagePanel setPrintData={setPrintData} id={itemId} image={imageFile} gcode={gcodeFile} folders={folders} setFile={setFile} weight={weight} filament={filament} printTime={printTime}/>}
 
                 </Tab.Panel>
             </Tab.Panels>
@@ -282,9 +306,9 @@ const printItem = async()=>{
             <div className="mt-3">
               <h2 className="sr-only">Product information</h2>
 
-              <p className="text-3xl tracking-tight text-white">${(filamentPrice*filament).toFixed(2)} <span  className="text-sm tracking-tight text-white">Filament Cost</span></p>
-              <p className="text-3xl tracking-tight text-white">${(hourlyPrice*printTime).toFixed(2)} <span  className="text-sm tracking-tight text-white">Hourly Cost</span></p>
-              <p className="text-3xl tracking-tight text-white">${((filamentPrice*filament)+(hourlyPrice*printTime)).toFixed(2)} <span  className="text-sm tracking-tight text-white">Total</span></p>
+              <p className="text-3xl tracking-tight text-white">${filamentCost.toFixed(2)} <span  className="text-sm tracking-tight text-white">Filament Cost</span></p>
+              <p className="text-3xl tracking-tight text-white">${printCost} <span  className="text-sm tracking-tight text-white">Hourly Cost</span></p>
+              <p className="text-3xl tracking-tight text-white">${(filamentCost+printCost).toFixed(2)} <span  className="text-sm tracking-tight text-white">Total</span></p>
 
             </div>
             

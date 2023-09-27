@@ -1,4 +1,4 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/canary/packages/create-next-app).
 
 ## Getting Started
 
@@ -42,38 +42,38 @@ By harnessing the capabilities of these advanced technologies, 3D Print Near Me 
 
 ## Demo Video
 
-![IMAGE ALT TEXT HERE](https://github.com/dominichackett/3dprintnearme/tree/opendatahack/blob/main/images/home.png)]https://www.youtube.com/watch?v=eDzqQalvaJo&feature=youtu.be
+![IMAGE ALT TEXT HERE](https://github.com/dominichackett/3dprintnearme/opendatahack/blob/main/images/home.png)]https://www.youtube.com/watch?v=eDzqQalvaJo&feature=youtu.be
 
 ## Screenshots
 
 ### Home Page
-![Home Page](https://github.com/dominichackett/3dprintnearme/tree/opendatahack/blob/main/images/home.png)
+![Home Page](https://github.com/dominichackett/3dprintnearme/opendatahack/blob/main/images/home.png)
 
 
 ### Market Place
-![Market Place](https://github.com/dominichackett/3dprintnearme/tree/opendatahack/blob/main/images/marketplace.png)
+![Market Place](https://github.com/dominichackett/3dprintnearme/opendatahack/blob/main/images/marketplace.png)
 
 
 ### My Objects
-![My Objects](https://github.com/dominichackett/3dprintnearme/tree/opendatahack/blob/main/images/myobjects.png)
+![My Objects](https://github.com/dominichackett/3dprintnearme/opendatahack/blob/main/images/myobjects.png)
 
 ### Create Objects
-![Object Image](https://github.com/dominichackett/3dprintnearme/tree/opendatahack/blob/main/images/create1.png)
-![Object Preview](https://github.com/dominichackett/3dprintnearme/tree/opendatahack/blob/main/images/create2.png)
+![Object Image](https://github.com/dominichackett/3dprintnearme/opendatahack/blob/main/images/create1.png)
+![Object Preview](https://github.com/dominichackett/3dprintnearme/opendatahack/blob/main/images/create2.png)
 
 ### Buy Item
-![Buy Item](https://github.com/dominichackett/3dprintnearme/tree/opendatahack/blob/main/images/buy.png)
+![Buy Item](https://github.com/dominichackett/3dprintnearme/opendatahack/blob/main/images/buy.png)
 
 ### Print
-![Print Item](https://github.com/dominichackett/3dprintnearme/tree/opendatahack/blob/main/images/printitem.png)
-![Print Item](https://github.com/dominichackett/3dprintnearme/tree/opendatahack/blob/main/images/printitem2.png)
+![Print Item](https://github.com/dominichackett/3dprintnearme/opendatahack/blob/main/images/printitem.png)
+![Print Item](https://github.com/dominichackett/3dprintnearme/opendatahack/blob/main/images/printitem2.png)
 
 
 ### Customer Orders
-![Customer Orders](https://github.com/dominichackett/3dprintnearme/tree/opendatahack/blob/main/images/order.png)
+![Customer Orders](https://github.com/dominichackett/3dprintnearme/opendatahack/blob/main/images/order.png)
 
 ### Print Order
-![Print Order](https://github.com/dominichackett/3dprintnearme/tree/opendatahack/blob/main/images/printorder.png)
+![Print Order](https://github.com/dominichackett/3dprintnearme/opendatahack/blob/main/images/printorder.png)
 
 
 

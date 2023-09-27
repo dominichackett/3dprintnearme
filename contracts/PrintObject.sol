@@ -59,7 +59,7 @@ contract PrintObject is Ownable, ReentrancyGuard {
         require(keccak256(abi.encodePacked((_currency))) ==keccak256(abi.encodePacked((printerList[_printerName].feeCurrency))) , "Currency needs to same as Listed Currency");
         balances[printerList[_printerName].printOwner][_currency] += cost ;
 
-        if (keccak256(abi.encodePacked((_currency))) == keccak256(abi.encodePacked(('matic')))) {
+        if (keccak256(abi.encodePacked((_currency))) == keccak256(abi.encodePacked(('tfil')))) {
 
              require( msg.value  >= cost, "Insufficient Amount");
 

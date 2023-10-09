@@ -704,13 +704,13 @@ catch(error)
           />}
     </label>
     {folders.map((item:any,index:any)=>(
-                 <div>
-                  <div key={index} className='mt-5 cursor-pointer' onClick={()=> setSelectedFileTab(item)}>
+                 <div key={index}>
+                  <div  className='mt-5 cursor-pointer' onClick={()=> setSelectedFileTab(item)}>
                   <div
                     className="text-white rounded-md bg-[#4E4C64] py-4 px-8  flex justify-between"
                   ><span>{item}</span> <span>Files: {selectedGCODEFiles[item]?.length}</span></div></div>
                   {selectedFileTab == item && <div key={index} className='cursor-pointer rounded-md py-4 px-8 border border-dashed border-[#A1A0AE] bg-[#353444]' >
-                  {selectedGCODEFiles[item]?.map((file:any,_index:any)=>(<div
+                  {selectedGCODEFiles[item]?.map((file:any,_index:any)=>(<div key={_index}
                     className="text-white py-2"
                   ><span onClick={()=> gcodeClicked(item ,_index)}> {file.name}</span></div>))}</div>}
                   
